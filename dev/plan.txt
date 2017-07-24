@@ -1,0 +1,34 @@
+Project Goals
+-Understand critical path and the algorithm for finding it
+-Learn about Object Oriented R programming (and R programming in general)
+-Write well documented, publishable R code
+-Submit R package to CRAN
+
+
+Project Overview for R Critical Path
+
+Goals for week 1 (Ending 7/14/17)
+-Understand the problem
+-Have a plan to attack it
+
+Goals for week 2 (Ending 7/21/17)
+-Get a working prototype
+-The code does not have to be good, but it should work
+ for standard cases
+
+Goals week 3 (Ending 7/28/17)
+-Tidy up/optimize the code from week 2
+-Remove any unnecesary for-loops and replace
+with vectorized operations for substantial speed-up
+-Thoroughly test the code from week 2
+-Implement rough draft Gantt chart code*
+-Move code over to R package and begin documentation
+-Benchmark code to see if there is any benefit to interfacing c++
+
+Goals for week 4
+-Finish Gantt chart code*
+-Complete documentation
+-Submit to CRAN
+
+*Need to do research first to make sure this is a reasonable
+feature

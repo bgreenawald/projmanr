@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "#' Generate the critical path for a collection of related tasks\n#'\n#' @param data A data frame of tasks with columns ID, name, duration, dependencies in that order.\n#' Name of columns does not matter, only order.\n#' @param gantt Boolean that specifies whether or not to produce a gantt chart of the results.\n#' @return A list of results. First element is the id's of the critical path.\n#' Second element is a data frame representation of the results that can be passed to the 'gantt' function.\n#' Third element is the gantt chart if 'gantt' argument is true.\n#' @export\ncritical_path <- function(data, gantt = F){\n  all_tasks <- apply(data, 1, read_func)\n  ids <- lapply(data[,1], to_id)\n  invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))\n\n\n  # Create hash map for the tasks\n  map <- hash::hash(keys = c(ids), values = all_tasks)\n\n  walk_ahead(all_tasks, map)\n  walk_back(all_tasks, map)\n  ret <- list()\n  ret$critical_path <- crit_path(all_tasks)\n  if(gantt){\n    ret$results <- to_data_frame(all_tasks)\n    ret$gantt <- gantt(as.data.frame(list(ret$results)), raw = F)\n  }else{\n    ret$results <- to_data_frame(all_tasks)\n  }\n  ret\n}\n\n#' Creates a Gantt chart of tasks in a project. This function is called by\n#' 'critical_path' if the 'gantt' argument is true.\n#'\n#' @param df A data frame of tasks. This data frame can either be raw data\n#' (i.e not from the 'critical_path' function) or can be the data residing in\n#' the 'results' element from the return value of the 'critical_path' function.\n#' If the data is raw, if must have columns \"ID, name, duration, dependencies\"\n#' in that order. These columns need not be named but they must be in that order.\n#' @param raw Boolean indicating if the data is raw of if it has already been processed\n#' by the 'critical_path' function.\n#' @return A gantt chart for the tasks. If raw is false, then this gantt chart will\n#' color the critical path elements.\n#' @export\n# Produce a gantt chart\ngantt <- function(df, raw=T){\n  if(raw){\n    all_tasks <- apply(df, 1, read_func)\n    ids <- lapply(df[,1], to_id)\n    invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))\n\n    # Create hash map for the tasks\n    map <- hash::hash(keys = c(ids), values = all_tasks)\n    walk_ahead(all_tasks, map)\n    df <- to_data_frame(all_tasks)\n  }\n\n  # Get dates in expected format\n  df$start_date <- as.Date(df$start_date, format = \"%m/%d/%Y\")\n  df$color <- \" \"\n  # Assign colors based on critical path\n  for(i in 1:nrow(df)){\n    if(df$is_critical[i] == TRUE){\n      df$color[i] <- \"#f4424b\"\n    }else{\n      df$color[i] <- \"#41a9f4\"\n    }\n  }\n\n  # Create plotly object\n  p <- plotly::plot_ly(type=\"scatter\", mode=\"lines\")\n  # Populate gantt chart\n  for(i in 1:(nrow(df) - 1)){\n    p <- plotly::add_trace(p,\n                           x = c(df$start_date[i], df$start_date[i] + df$duration[i]),  # x0, x1\n                           y = c(i, i),  # y0, y1\n                           line = list(color = df$color[i], width = 20),\n                           showlegend = F,\n                           hoverinfo = \"text\",\n\n                           # Create custom hover text\n\n                           text = paste(\"Task: \", df$name[i], \"<br>\",\n                                        \"Duration: \", df$duration[i], \"days<br>\")\n    )\n  }\n\n  return(p)\n}\n\n",
+    "created" : 1500762683671.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "633523743",
+    "id" : "68522D0B",
+    "lastKnownWriteTime" : 1500852381,
+    "last_content_update" : 1500852381445,
+    "path" : "C:/Users/Student/Box Sync/R Critical Path/projmanr/R/critical_path.R",
+    "project_path" : "R/critical_path.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

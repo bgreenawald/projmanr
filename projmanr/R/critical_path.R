@@ -110,7 +110,7 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
   }
 
   if(raw){
-    p <- layout(p,
+    p <- plotly::layout(p,
                 title = "Gantt Chart",
                 yaxis = list(title = "Task IDs",
                              tickmode = "array",
@@ -126,7 +126,7 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
     text <- paste("Total Duration: ",duration, "days<br>",
                   "End Date: ", end_date)
 
-    p <- layout(p,
+    p <- plotly::layout(p,
                 title = "Gantt Chart",
                 yaxis = list(title = "Task IDs",
                              tickmode = "array",

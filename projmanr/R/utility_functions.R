@@ -2,33 +2,33 @@
 
 
 Task <- R6::R6Class("Task",
-                public = list(
-                  id = NULL,
-                  name = NULL,
-                  duration = NULL,
-                  predecessor_id = NULL,
-                  successor_id = NULL,
-                  early_start = NULL,
-                  early_finish = NULL,
-                  late_start = NULL,
-                  late_finish = NULL,
-                  slack = NULL,
-                  is_critical = NULL,
-                  start_date = NULL,
-                  initialize = function(id = NA, name = NA, duration = NA, predecessor_id = NA){
-                    self$id <- to_id(id)
-                    self$name <- name
-                    self$duration <- as.numeric(duration)
-                    self$predecessor_id <- proc_ids(predecessor_id)
-                    self$successor_id <- NULL
-                    self$is_critical <- FALSE
-                    self$early_start <- 0
-                    self$early_finish <- 0
-                    self$late_start <- 0
-                    self$late_finish <- 0
-                    self$slack <- 0
-                  }
-                )
+                    public = list(
+                      id = NULL,
+                      name = NULL,
+                      duration = NULL,
+                      predecessor_id = NULL,
+                      successor_id = NULL,
+                      early_start = NULL,
+                      early_finish = NULL,
+                      late_start = NULL,
+                      late_finish = NULL,
+                      slack = NULL,
+                      is_critical = NULL,
+                      start_date = NULL,
+                      initialize = function(id = NA, name = NA, duration = NA, predecessor_id = NA){
+                        self$id <- to_id(id)
+                        self$name <- name
+                        self$duration <- as.numeric(duration)
+                        self$predecessor_id <- proc_ids(predecessor_id)
+                        self$successor_id <- NULL
+                        self$is_critical <- FALSE
+                        self$early_start <- 0
+                        self$early_finish <- 0
+                        self$late_start <- 0
+                        self$late_finish <- 0
+                        self$slack <- 0
+                      }
+                    )
 )
 
 # Functions ---------------------------------------------------------------
@@ -53,6 +53,7 @@ read_func <- function(x){
 
 # Convert numeric to id usable by the hash map
 to_id <- function(id){
+  id <- trimws(id)
   if(is.character(id)){
     return(sprintf("id%s", id))
   }else{
@@ -74,7 +75,7 @@ get_successor <- function(task, full_tasks){
 }
 
 # Function to walk ahead
-walk_ahead <- function(tasks, map){
+walk_ahead <- function(tasks, map, start_date = Sys.Date()){
 
   number_activities <- length(tasks)
 
@@ -85,7 +86,7 @@ walk_ahead <- function(tasks, map){
       tasks[[i]]$start_date <- Sys.Date()
     }else{
       for(id in current_task$predecessor_id){
-        exp <- sprintf("map$%s", id)
+        exp <- sprintf("map$'%s'", id)
         pred_task <- eval(parse(text = exp))
         if(current_task$early_start < pred_task$early_finish){
           current_task$early_start <- pred_task$early_finish
@@ -106,7 +107,7 @@ walk_back <- function(tasks, map){
   for(i in number_activities:1){
     current_task <- tasks[[i]]
     for(id in current_task$successor_id){
-      exp <- sprintf("map$%s", id)
+      exp <- sprintf("map$'%s'", id)
       succ_task <- eval(parse(text = exp))
       if(current_task$late_finish == 0){
         current_task$late_finish <- succ_task$late_start
@@ -142,18 +143,20 @@ to_data_frame <- function(tasks){
                    name <- character(),
                    start_date <- double(),
                    duration <- double(),
-                   is_critical <- logical())
+                   is_critical <- logical(),
+                   pred_id <- character())
 
   for(task in tasks){
     df <- rbind(df, data.frame(id <- gsub("id", "", task$id),
                                name <- task$name,
                                start_date <- task$start_date,
                                duration <- task$duration,
-                               is_critical <- task$is_critical))
+                               is_critical <- task$is_critical,
+                               pred_id <- paste(c(task$predecessor_id, " "), collapse = " "))
+    )
   }
-  colnames(df) <- c("id", "name", "start_date", "duration", "is_critical")
+  colnames(df) <- c("id", "name", "start_date", "duration", "is_critical", "pred_id")
   return(df)
 }
-
 
 

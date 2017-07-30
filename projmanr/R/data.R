@@ -6,7 +6,7 @@
 #'   \item{id}{id for the task}
 #'   \item{name}{name of the task}
 #'   \item{duration}{duration of task, in days}
-#'   \item{pred}{task id for the task's predeseccors}
+#'   \item{pred}{id for the tasks predecessors as a comma separated string}
 #' }
 #'
 "taskdata1"

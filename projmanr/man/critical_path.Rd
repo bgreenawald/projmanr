@@ -4,20 +4,26 @@
 \alias{critical_path}
 \title{Generate the critical path for a collection of related tasks}
 \usage{
-critical_path(data, gantt = F, start_date = Sys.Date())
+critical_path(df, gantt = F, start_date = Sys.Date())
 }
 \arguments{
-\item{data}{A data frame of tasks with columns ID, name, duration, dependencies in that order.
-Name of columns does not matter, only order.}
+\item{df}{A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string)
+in that order. Name of columns does not matter, only order.}
 
 \item{gantt}{Boolean that specifies whether or not to produce a gantt chart of the results.}
 
 \item{start_date}{Starting date for the project. Defaults to the current date.}
 }
 \value{
-A list of results. First element is the id's of the critical path.
-Second element is a data frame representation of the results that can be passed to the 'gantt' function.
-Third element is the gantt chart if 'gantt' argument is true.
+A list of results.
+
+\itemize{
+\item \strong{critical_path} The id's of the critical path.
+\item \strong{results} A data frame representation of the results that can be passed to the 'gantt' function.
+\item \strong{gantt} Gantt chart if 'gantt' argument is true.
+\item \strong{duration} The duration of the project in days.
+\item \strong{end_date} The end date of the project.
+}
 }
 \description{
 Generate the critical path for a collection of related tasks

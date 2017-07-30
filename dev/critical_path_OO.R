@@ -24,7 +24,7 @@ Task <- R6::R6Class("Task",
                         self$id <- to_id(id)
                         self$name <- name
                         self$duration <- as.numeric(duration)
-                        self$predecessor_id <- proc_ids(predecessor_id)
+                        self$predecessor_id <- unlist(proc_ids(predecessor_id))
                         self$successor_id <- NULL
                         self$is_critical <- FALSE
                         self$early_start <- 0
@@ -44,12 +44,12 @@ proc_ids <- function(ids){
   ids <- strsplit(ids, ",")
   ids <- lapply(ids, trimws)
   ids <- ids[[1]][ids[[1]] != ""]
-  return(lapply(ids, to_id))
+  return(list(ids))
 }
 
 # Function to Convert input to R6 class
 read_func <- function(x){
-  id <- x[1]
+  id <- to_id(x[1])
   name <- x[2]
   duration <- x[3]
   pred_id <- x[4]
@@ -59,11 +59,12 @@ read_func <- function(x){
 # Convert numeric to id usable by the hash map
 to_id <- function(id){
   id <- trimws(id)
-  if(is.character(id)){
-    return(sprintf("id%s", id))
-  }else{
-    return(sprintf("id%d", id))
-  }
+  # if(is.character(id)){
+  #   return(sprintf("id%s", id))
+  # }else{
+  #   return(sprintf("id%d", id))
+  # }
+  return(as.character(id))
 }
 
 # Gets the successor for an activity
@@ -71,7 +72,7 @@ get_successor <- function(task, full_tasks){
   ret_ids <- NULL
   task_id <- task$id
   for(cur_task in full_tasks){
-    if(task_id %in% cur_task$predecessor_id){
+    if(task_id %in% unlist(cur_task$predecessor_id)){
       ret_ids <- c(ret_ids, cur_task$id)
     }
   }
@@ -80,15 +81,14 @@ get_successor <- function(task, full_tasks){
 }
 
 # Function to walk ahead
-walk_ahead <- function(tasks, map, start_date = Sys.Date()){
+walk_ahead <- function(tasks, map, ids, start_date = Sys.Date()){
 
-  number_activities <- length(tasks)
-
-  for(i in 1:number_activities){
-    current_task <- tasks[[i]]
-    if(length(tasks[[i]]$predecessor_id) == 0){
-      tasks[[i]]$early_finish <- tasks[[i]]$early_start + tasks[[i]]$duration
-      tasks[[i]]$start_date <- Sys.Date()
+  for(cur in ids){
+    exp <- sprintf("map$'%s'", cur)
+    current_task <- eval(parse(text = exp))
+    if(length(current_task$predecessor_id) == 0){
+      current_task$early_finish <- current_task$early_start + current_task$duration
+      current_task$start_date <- Sys.Date()
     }else{
       for(id in current_task$predecessor_id){
         exp <- sprintf("map$'%s'", id)
@@ -104,13 +104,14 @@ walk_ahead <- function(tasks, map, start_date = Sys.Date()){
 }
 
 # Function to walk back
-walk_back <- function(tasks, map){
-  number_activities <- length(tasks)
+walk_back <- function(tasks, map, ids){
 
-  tasks[[number_activities]]$late_finish <- tasks[[number_activities]]$early_finish
-
-  for(i in number_activities:1){
-    current_task <- tasks[[i]]
+  for(cur in rev(ids)){
+    exp <- sprintf("map$'%s'", cur)
+    current_task <- eval(parse(text = exp))
+    if(length(current_task$successor_id) == 0){
+      current_task$late_finish <- current_task$early_finish
+    }
     for(id in current_task$successor_id){
       exp <- sprintf("map$'%s'", id)
       succ_task <- eval(parse(text = exp))
@@ -127,12 +128,14 @@ walk_back <- function(tasks, map){
 }
 
 # Calculate the critical path
-crit_path <- function(tasks){
+crit_path <- function(tasks, ids, map){
   c_path <- NULL
 
-  for(task in tasks){
+  for(id in ids){
+    exp <- sprintf("map$'%s'", id)
+    task <- eval(parse(text = exp))
     if(task$early_finish == task$late_finish && task$early_start == task$late_start){
-      c_path <- c(c_path, gsub("id", "", task$id))
+      c_path <- c(c_path, task$id)
       task$is_critical <- TRUE
     }else{
       task$is_critical <- FALSE
@@ -152,7 +155,7 @@ to_data_frame <- function(tasks){
                    pred_id <- character())
 
   for(task in tasks){
-    df <- rbind(df, data.frame(id <- gsub("id", "", task$id),
+    df <- rbind(df, data.frame(id <- task$id,
                                name <- task$name,
                                start_date <- task$start_date,
                                duration <- task$duration,
@@ -170,7 +173,7 @@ make_node_list <- function(map, all_ids){
   successor <- character()
 
   for(id in all_ids){
-    exp <- sprintf("map$%s", id)
+    exp <- sprintf("map$'%s'", id)
     succ_task <- eval(parse(text = exp))
     for(id2 in succ_task$successor_id){
       ids <- c(ids, id)
@@ -184,6 +187,7 @@ make_node_list <- function(map, all_ids){
 
   return(ret)
 }
+
 
 #' Generate the critical path for a collection of related tasks
 #'
@@ -209,10 +213,15 @@ critical_path <- function(data, gantt = F, start_date = Sys.Date()){
   # Create hash map for the tasks
   map <- hash::hash(keys = c(ids), values = all_tasks)
 
-  walk_ahead(all_tasks, map, start_date)
-  walk_back(all_tasks, map)
+  # Topologically sort the ids
+  adj_list <- make_node_list(map, ids)
+  graph <- graph_from_data_frame(adj_list)
+  new_ids <- names(topo_sort(graph = graph))
+
+  walk_ahead(all_tasks, map, new_ids, start_date)
+  walk_back(all_tasks, map, new_ids)
   ret <- list()
-  ret$critical_path <- crit_path(all_tasks)
+  ret$critical_path <- crit_path(all_tasks, new_ids, map)
   if(gantt){
     ret$results <- to_data_frame(all_tasks)
     ret$gantt <- gantt(as.data.frame(list(ret$results)), raw = F)
@@ -263,6 +272,7 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
   # Get dates in expected format
   df$start_date <- as.Date(df$start_date, format = "%m/%d/%Y")
   df$color <- " "
+
   # Assign colors based on critical path
   for(i in 1:nrow(df)){
     if(df$is_critical[i] == TRUE){
@@ -303,7 +313,8 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
                                      tickmode = "array",
                                      tickvals = 1:nrow(df),
                                      ticktext = df$id,
-                                     showgrid = F),
+                                     showgrid = F,
+                                     autorange = "reversed"),
                         xaxis = list(title = "Dates",
                                      showgrid = F)
     )
@@ -319,13 +330,14 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
                                      tickmode = "array",
                                      tickvals = 1:nrow(df),
                                      ticktext = df$id,
-                                     showgrid = F),
+                                     showgrid = F,
+                                     autorange = "reversed"),
                         xaxis = list(title = "Dates",
                                      showgrid = F),
                         annotations = list(
                           list(text = text,
                                xref = "paper", yref = "paper",
-                               x = 0.80, y = 0.1,
+                               x = 0.80, y = 0.9,
                                ax = 0, ay = 0,
                                align = "left")
                         )
@@ -356,15 +368,16 @@ graph <- graph_from_data_frame(adj_list)
 new_ids <- names(topo_sort(graph = graph))
 
 # Algorithm
-walk_ahead(all_tasks, map)
-walk_back(all_tasks, map)
-res <- crit_path(all_tasks)
+walk_ahead(all_tasks, map, new_ids)
+walk_back(all_tasks, map, new_ids)
+res <- crit_path(all_tasks, new_ids, map)
 df <- to_data_frame(all_tasks)
 gantt(df, F)
 
 # Network diagram
 graph <- simplify(graph)
-l <- layout.reingold.tilford(graph)
+l <- layout_as_tree(graph)
+plot(graph, layout=l)
 l[, c(1,2)] <- l[ ,c(2,1)]
 l[, 1] <- -l[, 1]
 V(graph)$color[1] <- "red"

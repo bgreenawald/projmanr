@@ -1,50 +1,62 @@
 #' Generate the critical path for a collection of related tasks
 #'
-#' @param data A data frame of tasks with columns ID, name, duration, dependencies in that order.
-#' Name of columns does not matter, only order.
+#' @param df A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string)
+#' in that order. Name of columns does not matter, only order.
 #' @param gantt Boolean that specifies whether or not to produce a gantt chart of the results.
 #' @param start_date Starting date for the project. Defaults to the current date.
-#' @return A list of results. First element is the id's of the critical path.
-#' Second element is a data frame representation of the results that can be passed to the 'gantt' function.
-#' Third element is the gantt chart if 'gantt' argument is true.
+#' @return A list of results.
+#'
+#' \itemize{
+#' \item \strong{critical_path} The id's of the critical path.
+#' \item \strong{results} A data frame representation of the results that can be passed to the 'gantt' function.
+#' \item \strong{gantt} Gantt chart if 'gantt' argument is true.
+#' \item \strong{duration} The duration of the project in days.
+#' \item \strong{end_date} The end date of the project.
+#' }
 #' @examples
 #' # Use provided sample data
 #' data <- taskdata1
 #'
 #' res <- critical_path(data, gantt = F)
 #' @export
-critical_path <- function(data, gantt = F, start_date = Sys.Date()){
-  all_tasks <- apply(data, 1, read_func)
-  ids <- lapply(data[,1], to_id)
+critical_path <- function(df, gantt = F, start_date = Sys.Date()){
+  all_tasks <- apply(df, 1, read_func)
+  ids <- lapply(df[,1], to_id)
   invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))
 
 
   # Create hash map for the tasks
   map <- hash::hash(keys = c(ids), values = all_tasks)
 
-  walk_ahead(all_tasks, map, start_date)
-  walk_back(all_tasks, map)
+  # Topologically sort the ids
+  adj_list <- make_node_list(map, ids)
+  graph <- graph_from_data_frame(adj_list)
+  new_ids <- names(topo_sort(graph = graph))
+
+  walk_ahead(all_tasks, map, new_ids, start_date)
+  walk_back(all_tasks, map, new_ids)
   ret <- list()
-  ret$critical_path <- crit_path(all_tasks)
+  ret$critical_path <- crit_path(all_tasks, new_ids, map)
   if(gantt){
     ret$results <- to_data_frame(all_tasks)
-    ret$gantt <- gantt(as.data.frame(list(ret$results)), raw = F)
+    ret$gantt <- gantt(as.data.frame(list(ret$results)))
   }else{
     ret$results <- to_data_frame(all_tasks)
   }
+
+  ret$total_duration <- sum((ret$results)[(ret$results)$is_critical,]$duration)
+  ret$end_date <- start_date + ret$total_duration
   ret
 }
 
 #' Creates a Gantt chart of tasks in a project.
-#'
-#' @param df A data frame of tasks. This function is called by
-#' 'critical_path' if the 'gantt' argument is true. This data frame can either be raw data
+#' @usage gantt(res$results)
+#' @param df A data frame of tasks. This data frame can either be raw data
 #' (i.e not from the 'critical_path' function) or can be the data residing in
 #' the 'results' element from the return value of the 'critical_path' function.
 #' If the data is raw, if must have columns "ID, name, duration, dependencies"
 #' in that order. These columns need not be named but they must be in that order.
-#' @param raw Boolean indicating if the data is raw of if it has already been processed
-#' by the 'critical_path' function.
+#' Type 'taskdata1' into the console for an example.
 #' @param start_date Starting date for the project. Defaults to the current date.
 #' @return A gantt chart for the tasks. If raw is false, then this gantt chart will
 #' color the critical path elements.
@@ -52,16 +64,24 @@ critical_path <- function(data, gantt = F, start_date = Sys.Date()){
 #' # Use raw example data
 #' data <- taskdata1
 #' # Create a gantt chart using the raw data
-#' gantt(data, raw = T)
+#' gantt(data)
 #'
 #' res <- critical_path(data)
 #'
 #' # Create a second gantt chart using the processed data
-#' gantt(res$results, raw = F)
+#' gantt(res$results)
 #'
 #' @export
 # Produce a gantt chart
-gantt <- function(df, raw = T, start_date = Sys.Date()){
+gantt <- function(df, start_date = Sys.Date()){
+  if(ncol(df) == 4){
+    raw = T
+  }else if(ncol(df) != 6){
+    stop("Invalid input, raw input should have 4 columns, processed should have 6")
+  }else{
+    raw = F
+  }
+
   if(raw){
     all_tasks <- apply(df, 1, read_func)
     ids <- lapply(df[,1], to_id)
@@ -69,7 +89,12 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
 
     # Create hash map for the tasks
     map <- hash::hash(keys = c(ids), values = all_tasks)
-    walk_ahead(all_tasks, map, start_date)
+
+    adj_list <- make_node_list(map, ids)
+    graph <- graph_from_data_frame(adj_list)
+    new_ids <- names(topo_sort(graph = graph))
+
+    walk_ahead(all_tasks, map, new_ids, start_date)
     df <- to_data_frame(all_tasks)
   }
 
@@ -111,14 +136,14 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
 
   if(raw){
     p <- plotly::layout(p,
-                title = "Gantt Chart",
-                yaxis = list(title = "Task IDs",
-                             tickmode = "array",
-                             tickvals = 1:nrow(df),
-                             ticktext = df$id,
-                             showgrid = F),
-                xaxis = list(title = "Dates",
-                             showgrid = F)
+                        title = "Gantt Chart",
+                        yaxis = list(title = "Task IDs",
+                                     tickmode = "array",
+                                     tickvals = 1:nrow(df),
+                                     ticktext = df$id,
+                                     showgrid = F),
+                        xaxis = list(title = "Dates",
+                                     showgrid = F)
     )
   }else{
     duration <- sum(df[df$is_critical, ]$duration)
@@ -127,25 +152,23 @@ gantt <- function(df, raw = T, start_date = Sys.Date()){
                   "End Date: ", end_date)
 
     p <- plotly::layout(p,
-                title = "Gantt Chart",
-                yaxis = list(title = "Task IDs",
-                             tickmode = "array",
-                             tickvals = 1:nrow(df),
-                             ticktext = df$id,
-                             showgrid = F),
-                xaxis = list(title = "Dates",
-                             showgrid = F),
-                annotations = list(
-                  list(text = text,
-                       xref = "paper", yref = "paper",
-                       x = 0.80, y = 0.1,
-                       ax = 0, ay = 0,
-                       align = "left")
-                )
+                        title = "Gantt Chart",
+                        yaxis = list(title = "Task IDs",
+                                     tickmode = "array",
+                                     tickvals = 1:nrow(df),
+                                     ticktext = df$id,
+                                     showgrid = F),
+                        xaxis = list(title = "Dates",
+                                     showgrid = F),
+                        annotations = list(
+                          list(text = text,
+                               xref = "paper", yref = "paper",
+                               x = 0.80, y = 0.1,
+                               ax = 0, ay = 0,
+                               align = "left")
+                        )
     )
   }
 
   return(p)
 }
-
-

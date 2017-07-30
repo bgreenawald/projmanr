@@ -4,18 +4,14 @@
 \alias{gantt}
 \title{Creates a Gantt chart of tasks in a project.}
 \usage{
-gantt(df, raw = T, start_date = Sys.Date())
+gantt(df, start_date = Sys.Date())
 }
 \arguments{
-\item{df}{A data frame of tasks. This function is called by
-'critical_path' if the 'gantt' argument is true. This data frame can either be raw data
+\item{df}{A data frame of tasks. This data frame can either be raw data
 (i.e not from the 'critical_path' function) or can be the data residing in
 the 'results' element from the return value of the 'critical_path' function.
 If the data is raw, if must have columns "ID, name, duration, dependencies"
 in that order. These columns need not be named but they must be in that order.}
-
-\item{raw}{Boolean indicating if the data is raw of if it has already been processed
-by the 'critical_path' function.}
 
 \item{start_date}{Starting date for the project. Defaults to the current date.}
 }
@@ -30,11 +26,11 @@ Creates a Gantt chart of tasks in a project.
 # Use raw example data
 data <- taskdata1
 # Create a gantt chart using the raw data
-gantt(data, raw = T)
+gantt(data)
 
 res <- critical_path(data)
 
 # Create a second gantt chart using the processed data
-gantt(res$results, raw = F)
+gantt(res$results)
 
 }

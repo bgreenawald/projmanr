@@ -75,15 +75,14 @@ get_successor <- function(task, full_tasks){
 }
 
 # Function to walk ahead
-walk_ahead <- function(tasks, map, start_date = Sys.Date()){
+walk_ahead <- function(tasks, map, ids, start_date = Sys.Date()){
 
-  number_activities <- length(tasks)
-
-  for(i in 1:number_activities){
-    current_task <- tasks[[i]]
-    if(length(tasks[[i]]$predecessor_id) == 0){
-      tasks[[i]]$early_finish <- tasks[[i]]$early_start + tasks[[i]]$duration
-      tasks[[i]]$start_date <- Sys.Date()
+  for(cur in ids){
+    exp <- sprintf("map$'%s'", cur)
+    current_task <- eval(parse(text = exp))
+    if(length(current_task$predecessor_id) == 0){
+      current_task$early_finish <- current_task$early_start + current_task$duration
+      current_task$start_date <- Sys.Date()
     }else{
       for(id in current_task$predecessor_id){
         exp <- sprintf("map$'%s'", id)
@@ -99,13 +98,14 @@ walk_ahead <- function(tasks, map, start_date = Sys.Date()){
 }
 
 # Function to walk back
-walk_back <- function(tasks, map){
-  number_activities <- length(tasks)
+walk_back <- function(tasks, map, ids){
 
-  tasks[[number_activities]]$late_finish <- tasks[[number_activities]]$early_finish
-
-  for(i in number_activities:1){
-    current_task <- tasks[[i]]
+  for(cur in rev(ids)){
+    exp <- sprintf("map$'%s'", cur)
+    current_task <- eval(parse(text = exp))
+    if(length(current_task$successor_id) == 0){
+      current_task$late_finish <- current_task$early_finish
+    }
     for(id in current_task$successor_id){
       exp <- sprintf("map$'%s'", id)
       succ_task <- eval(parse(text = exp))
@@ -122,10 +122,12 @@ walk_back <- function(tasks, map){
 }
 
 # Calculate the critical path
-crit_path <- function(tasks){
+crit_path <- function(tasks, ids, map){
   c_path <- NULL
 
-  for(task in tasks){
+  for(id in ids){
+    exp <- sprintf("map$'%s'", id)
+    task <- eval(parse(text = exp))
     if(task$early_finish == task$late_finish && task$early_start == task$late_start){
       c_path <- c(c_path, gsub("id", "", task$id))
       task$is_critical <- TRUE
@@ -159,4 +161,23 @@ to_data_frame <- function(tasks){
   return(df)
 }
 
+# Produces a list to be handled by the graph
+make_node_list <- function(map, all_ids){
+  ids <- character()
+  successor <- character()
 
+  for(id in all_ids){
+    exp <- sprintf("map$%s", id)
+    succ_task <- eval(parse(text = exp))
+    for(id2 in succ_task$successor_id){
+      ids <- c(ids, id)
+      successor <- c(successor, id2)
+    }
+  }
+
+  ret <- data.frame(id = ids,
+                    successor = successor,
+                    stringsAsFactors=FALSE)
+
+  return(ret)
+}

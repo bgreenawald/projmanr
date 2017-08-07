@@ -15,9 +15,9 @@
 #' }
 #' @examples
 #' # Use provided sample data
-#' data <- taskdata1
+#' df <- taskdata1
 #'
-#' res <- critical_path(data, gantt = F)
+#' res <- critical_path(df, gantt = F)
 #' @export
 critical_path <- function(df, gantt = F, start_date = Sys.Date()){
   all_tasks <- apply(df, 1, read_func)
@@ -26,7 +26,7 @@ critical_path <- function(df, gantt = F, start_date = Sys.Date()){
 
 
   # Create hash map for the tasks
-  map <- hash::hash(keys = c(ids), values = all_tasks)
+  map <- hash(keys = c(ids), values = all_tasks)
 
   # Topologically sort the ids
   adj_list <- make_node_list(map, ids)
@@ -50,6 +50,7 @@ critical_path <- function(df, gantt = F, start_date = Sys.Date()){
 }
 
 #' Creates a Gantt chart of tasks in a project.
+#' @usage gantt(taskdata1)
 #' @usage gantt(res$results)
 #' @param df A data frame of tasks. This data frame can either be raw data
 #' (i.e not from the 'critical_path' function) or can be the data residing in
@@ -89,18 +90,14 @@ gantt <- function(df, start_date = Sys.Date()){
 
     # Create hash map for the tasks
     map <- hash::hash(keys = c(ids), values = all_tasks)
-
-    adj_list <- make_node_list(map, ids)
-    graph <- graph_from_data_frame(adj_list)
-    new_ids <- names(topo_sort(graph = graph))
-
-    walk_ahead(all_tasks, map, new_ids, start_date)
+    walk_ahead(all_tasks, map, start_date)
     df <- to_data_frame(all_tasks)
   }
 
   # Get dates in expected format
   df$start_date <- as.Date(df$start_date, format = "%m/%d/%Y")
   df$color <- " "
+
   # Assign colors based on critical path
   for(i in 1:nrow(df)){
     if(df$is_critical[i] == TRUE){
@@ -141,7 +138,8 @@ gantt <- function(df, start_date = Sys.Date()){
                                      tickmode = "array",
                                      tickvals = 1:nrow(df),
                                      ticktext = df$id,
-                                     showgrid = F),
+                                     showgrid = F,
+                                     autorange = "reversed"),
                         xaxis = list(title = "Dates",
                                      showgrid = F)
     )
@@ -157,13 +155,14 @@ gantt <- function(df, start_date = Sys.Date()){
                                      tickmode = "array",
                                      tickvals = 1:nrow(df),
                                      ticktext = df$id,
-                                     showgrid = F),
+                                     showgrid = F,
+                                     autorange = "reversed"),
                         xaxis = list(title = "Dates",
                                      showgrid = F),
                         annotations = list(
                           list(text = text,
                                xref = "paper", yref = "paper",
-                               x = 0.80, y = 0.1,
+                               x = 0.80, y = 0.9,
                                ax = 0, ay = 0,
                                align = "left")
                         )

@@ -30,7 +30,7 @@ Generate the critical path for a collection of related tasks
 }
 \examples{
 # Use provided sample data
-data <- taskdata1
+df <- taskdata1
 
-res <- critical_path(data, gantt = F)
+res <- critical_path(df, gantt = F)
 }

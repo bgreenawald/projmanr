@@ -4,14 +4,15 @@
 \alias{gantt}
 \title{Creates a Gantt chart of tasks in a project.}
 \usage{
-gantt(df, start_date = Sys.Date())
+gantt(taskdata1)
 }
 \arguments{
 \item{df}{A data frame of tasks. This data frame can either be raw data
 (i.e not from the 'critical_path' function) or can be the data residing in
 the 'results' element from the return value of the 'critical_path' function.
 If the data is raw, if must have columns "ID, name, duration, dependencies"
-in that order. These columns need not be named but they must be in that order.}
+in that order. These columns need not be named but they must be in that order.
+Type 'taskdata1' into the console for an example.}
 
 \item{start_date}{Starting date for the project. Defaults to the current date.}
 }

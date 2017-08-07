@@ -14,5 +14,7 @@ LazyData: true
 Imports:
 	R6,
 	hash,
-	plotly
+	plotly,
+	igraph
 RoxygenNote: 6.0.1
+Suggests: testthat

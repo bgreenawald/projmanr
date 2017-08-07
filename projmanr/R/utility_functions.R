@@ -19,7 +19,7 @@ Task <- R6::R6Class("Task",
                         self$id <- to_id(id)
                         self$name <- name
                         self$duration <- as.numeric(duration)
-                        self$predecessor_id <- proc_ids(predecessor_id)
+                        self$predecessor_id <- unlist(proc_ids(predecessor_id))
                         self$successor_id <- NULL
                         self$is_critical <- FALSE
                         self$early_start <- 0
@@ -39,12 +39,12 @@ proc_ids <- function(ids){
   ids <- strsplit(ids, ",")
   ids <- lapply(ids, trimws)
   ids <- ids[[1]][ids[[1]] != ""]
-  return(lapply(ids, to_id))
+  return(list(ids))
 }
 
 # Function to Convert input to R6 class
 read_func <- function(x){
-  id <- x[1]
+  id <- to_id(x[1])
   name <- x[2]
   duration <- x[3]
   pred_id <- x[4]
@@ -54,11 +54,12 @@ read_func <- function(x){
 # Convert numeric to id usable by the hash map
 to_id <- function(id){
   id <- trimws(id)
-  if(is.character(id)){
-    return(sprintf("id%s", id))
-  }else{
-    return(sprintf("id%d", id))
-  }
+  # if(is.character(id)){
+  #   return(sprintf("id%s", id))
+  # }else{
+  #   return(sprintf("id%d", id))
+  # }
+  return(as.character(id))
 }
 
 # Gets the successor for an activity
@@ -66,7 +67,7 @@ get_successor <- function(task, full_tasks){
   ret_ids <- NULL
   task_id <- task$id
   for(cur_task in full_tasks){
-    if(task_id %in% cur_task$predecessor_id){
+    if(task_id %in% unlist(cur_task$predecessor_id)){
       ret_ids <- c(ret_ids, cur_task$id)
     }
   }
@@ -129,7 +130,7 @@ crit_path <- function(tasks, ids, map){
     exp <- sprintf("map$'%s'", id)
     task <- eval(parse(text = exp))
     if(task$early_finish == task$late_finish && task$early_start == task$late_start){
-      c_path <- c(c_path, gsub("id", "", task$id))
+      c_path <- c(c_path, task$id)
       task$is_critical <- TRUE
     }else{
       task$is_critical <- FALSE
@@ -149,7 +150,7 @@ to_data_frame <- function(tasks){
                    pred_id <- character())
 
   for(task in tasks){
-    df <- rbind(df, data.frame(id <- gsub("id", "", task$id),
+    df <- rbind(df, data.frame(id <- task$id,
                                name <- task$name,
                                start_date <- task$start_date,
                                duration <- task$duration,
@@ -167,7 +168,7 @@ make_node_list <- function(map, all_ids){
   successor <- character()
 
   for(id in all_ids){
-    exp <- sprintf("map$%s", id)
+    exp <- sprintf("map$'%s'", id)
     succ_task <- eval(parse(text = exp))
     for(id2 in succ_task$successor_id){
       ids <- c(ids, id)

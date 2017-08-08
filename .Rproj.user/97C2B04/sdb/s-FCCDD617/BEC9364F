@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "library(testthat)\nlibrary(projmanr)\n\ntest_check(\"projmanr\")\n",
+    "created" : 1502032675985.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1371691838",
+    "id" : "BEC9364F",
+    "lastKnownWriteTime" : 1502032579,
+    "last_content_update" : 1502032579,
+    "path" : "C:/Users/Student/Box Sync/R Critical Path/projmanr/tests/testthat.R",
+    "project_path" : "tests/testthat.R",
+    "properties" : {
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

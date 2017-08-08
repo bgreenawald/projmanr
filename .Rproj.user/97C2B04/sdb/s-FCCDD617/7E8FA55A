@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(projmanr)\nlibrary(igraph)\nlibrary(tidyr)\nlibrary(R6)\nlibrary(ggplot2)\n\ncontext(\"Critican Path on taskdata2\")\n\ntest_that(\"Correct critical path\", {\n  res <- critical_path(taskdata2)\n  expect_equal(length(res$critical_path), 5)\n  expect_equal(res$critical_path, c(\"12\", \"2\", \"4\", \"14\", \"15\"))\n  expect_equal(length(res), 5)\n  expect_equal(res$total_duration, 23)\n  expect_equal(nrow(res$results), nrow(taskdata2))\n})\n\ntest_that(\"Correct critical path is computed with gantt\", {\n  res <- critical_path(taskdata2, gantt = T)\n  expect_equal(length(res$critical_path), 5)\n  expect_equal(res$critical_path, c(\"12\", \"2\", \"4\", \"14\", \"15\"))\n  expect_equal(length(res), 6)\n  expect_equal(res$total_duration, 23)\n  expect_equal(nrow(res$results), nrow(taskdata2))\n})\n\ntest_that(\"Correct critical path is computed with network diagram\", {\n  res <- critical_path(taskdata2, network = T)\n  expect_equal(length(res$critical_path), 5)\n  expect_equal(res$critical_path, c(\"12\", \"2\", \"4\", \"14\", \"15\"))\n  expect_equal(length(res), 6)\n  expect_equal(res$total_duration, 23)\n  expect_equal(nrow(res$results), nrow(taskdata2))\n})\n\ntest_that(\"Correct critical path is computed with both graph\", {\n  res <- critical_path(taskdata2, gantt = T, network = T)\n  expect_equal(length(res$critical_path), 5)\n  expect_equal(res$critical_path, c(\"12\", \"2\", \"4\", \"14\", \"15\"))\n  expect_equal(length(res), 7)\n  expect_equal(res$total_duration, 23)\n  expect_equal(nrow(res$results), nrow(taskdata2))\n})\n",
+    "created" : 1502129908387.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3737826601",
+    "id" : "7E8FA55A",
+    "lastKnownWriteTime" : 1502130246,
+    "last_content_update" : 1502130246963,
+    "path" : "C:/Users/Student/Box Sync/R Critical Path/projmanr/tests/testthat/testtaskdata2.R",
+    "project_path" : "tests/testthat/testtaskdata2.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -189,3 +189,8 @@ make_node_list <- function(map, all_ids){
 
   return(ret)
 }
+
+# Unloads the DLL after using compiled code
+.onUnload <- function(libpath){
+  library.dynam.unload("projmanr", libpath)
+}

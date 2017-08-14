@@ -15,7 +15,10 @@ Imports:
 	R6 (>= 2.2.2),
 	igraph (>= 1.0.1),
 	ggplot2 (>= 2.2.1),
-	tidyr (>= 0.6.3)
+	tidyr (>= 0.6.3),
+	triangle,
+    Rcpp
 RoxygenNote: 6.0.1
 Depends: R (>= 3.3.0)
 Suggests: testthat
+LinkingTo: Rcpp

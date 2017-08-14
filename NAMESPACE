@@ -3,3 +3,6 @@
 export(critical_path)
 export(gantt)
 export(network_diagram)
+export(simulation)
+importFrom(Rcpp,sourceCpp)
+useDynLib(projmanr, .registration = TRUE)

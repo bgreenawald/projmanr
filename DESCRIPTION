@@ -2,12 +2,13 @@ Package: projmanr
 Type: Package
 Title: Project Management Tools
 Version: 0.1.0
-Author: person("Ben", "Greenawald", email = "bgreenawald@gmail.com",
-	role = c("aut", "cre")
+Authors@R: c(
+	person("Ben", "Greenawald", email = "bgreenawald@gmail.com", role = c("aut", "cre", "cph")),
+	person("Yael", "Grushka-Cockayne", role = c("aut", "cph"))
+	)
 Maintainer: The package maintainer <bgreenawald@gmail.com>
-Description: Tools to assist project managers. Currently
-	can find the critical path of given tasks and produce
-	a gantt chart.
+Description: Open source tools for project managers. Meant to provide
+	similiar functionality to basic tools offered by MS Project.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -16,9 +17,6 @@ Imports:
 	igraph (>= 1.0.1),
 	ggplot2 (>= 2.2.1),
 	tidyr (>= 0.6.3),
-	triangle,
-    Rcpp
 RoxygenNote: 6.0.1
 Depends: R (>= 3.3.0)
 Suggests: testthat
-LinkingTo: Rcpp

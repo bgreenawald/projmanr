@@ -41,3 +41,17 @@ test_that("Correct critical path is computed with both graph", {
   expect_equal(res$total_duration, 23)
   expect_equal(nrow(res$results), nrow(taskdata2))
 })
+
+test_that("Check that both errors work", {
+  # Check for I.D Validation
+  data <- taskdata1
+  data[, 4] <- as.character(data[, 4])
+  data[2,4] <- "1,31"
+  expect_error(critical_path(data), "Invalid predeccessor id. Using a predeccessor id for a task that does not exist.")
+
+  # Check for non-negative duration
+  data <- taskdata1
+  data[1,3] <- -1
+  expect_error(critical_path(data), "Durations must be non-negative")
+
+})

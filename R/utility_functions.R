@@ -43,15 +43,6 @@ proc_ids <- function(ids){
   return(list(ids))
 }
 
-# Function to Convert input to R6 class
-read_func <- function(x){
-  id <- to_id(x[1])
-  name <- x[2]
-  duration <- x[3]
-  pred_id <- x[4]
-  new_Task <- Task$new(id, name, duration, pred_id)
-}
-
 # Convert numeric to id usable by the hash map
 to_id <- function(id){
   id <- trimws(id)
@@ -188,9 +179,4 @@ make_node_list <- function(map, all_ids){
                     stringsAsFactors=FALSE)
 
   return(ret)
-}
-
-# Unloads the DLL after using compiled code
-.onUnload <- function(libpath){
-  library.dynam.unload("projmanr", libpath)
 }

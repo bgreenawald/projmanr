@@ -6,7 +6,7 @@ Authors@R: c(
 	person("Ben", "Greenawald", email = "bgreenawald@gmail.com", role = c("aut", "cre", "cph")),
 	person("Yael", "Grushka-Cockayne", role = c("aut", "cph"))
 	)
-Maintainer: The package maintainer: Ben Greenawald <bgreenawald@gmail.com>
+Maintainer: Ben Greenawald <bgreenawald@gmail.com>
 Description: Open source tools for project managers. Meant to provide
 	similiar functionality to basic tools offered by MS Project.
 License: MIT + file LICENSE

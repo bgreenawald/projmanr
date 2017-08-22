@@ -2,7 +2,7 @@
 * Local Windows 10, R 3.4.1 (also tested on R 3.3.0)
 * Local (dual boot) Linux Mint 18.1, R 3.4.0
 
-## R CMD check resutls
+## R CMD check results
 There were no ERRORS, WARNINGS, or NOTES.
 
 ## Downstream Dependencies

@@ -7,9 +7,10 @@ Authors@R: c(
 	person("Yael", "Grushka-Cockayne", role = c("aut", "cph"))
 	)
 Maintainer: Ben Greenawald <bgreenawald@gmail.com>
-Description: Open source tools for project managers. Meant to provide
-	similiar functionality to basic tools offered by MS Project.
-License: MIT + file LICENSE
+Description: Calculates the critical path for a series of tasks, 
+	creates Gantt charts and generates network diagrams in order to 
+	provide similar functionality to the basic tools offered by 'MS Project'.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Imports:

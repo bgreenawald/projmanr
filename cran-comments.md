@@ -5,5 +5,8 @@
 ## R CMD check results
 There were no ERRORS, WARNINGS, or NOTES.
 
+## Corrections from previous submission
+* Corrected spelling errors in description and added quotes to 'MS Project'
+
 ## Downstream Dependencies
 First time releasing, no downstream dependencies needed to be checked

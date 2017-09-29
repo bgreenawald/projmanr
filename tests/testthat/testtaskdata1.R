@@ -41,3 +41,11 @@ test_that("Correct critical path is computed with both graph", {
   expect_equal(res$total_duration, 19)
   expect_equal(nrow(res$results), nrow(taskdata1))
 })
+
+test_that("Date output is working correctly", {
+  res <- critical_path(taskdata1, gantt = T, network = T, start_date = "2017-10-10")
+  expect_equal(res$end_date, as.Date("2017-10-29"))
+
+  res <- critical_path(taskdata1, gantt = T, network = T)
+  expect_equal(res$end_date, Sys.Date() + 19)
+})

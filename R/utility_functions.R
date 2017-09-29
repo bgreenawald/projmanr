@@ -70,7 +70,7 @@ walk_ahead <- function(map, ids, start_date = Sys.Date()){
     current_task <- eval(parse(text = exp))
     if(length(current_task$predecessor_id) == 0){
       current_task$early_finish <- current_task$early_start + current_task$duration
-      current_task$start_date <- Sys.Date()
+      current_task$start_date <- start_date
     }else{
       for(id in current_task$predecessor_id){
         exp <- sprintf("map$'%s'", id)

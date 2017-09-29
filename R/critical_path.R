@@ -23,6 +23,7 @@
 #'
 #' @export
 critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
+  start_date <- as.Date(start_date)
   data <- df[, 1:4]
   all_tasks <- list()
   for(i in 1:nrow(data)){
@@ -88,7 +89,7 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 
   # If gantt is true, add network diagram to results
   if(gantt){
-    ret$gantt <- gantt(ret)
+    ret$gantt <- gantt(ret, start_date = start_date)
   }
 
   ret$total_duration <- sum((ret$results)[(ret$results)$is_critical,]$duration)
@@ -128,6 +129,9 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #' @export
 gantt <- function(df, start_date = Sys.Date()){
   raw = F
+
+  # Ensure start date type is correct
+  start_date <- as.Date(start_date)
 
   # LOOK AT THESE CONDITIONS
   if(length(ncol(df) > 0)){
@@ -183,7 +187,7 @@ gantt <- function(df, start_date = Sys.Date()){
       new_ids <- c("%id_source%", sorted_ids, "%id_sink%")
 
       # Perform the walk ahead
-      walk_ahead(all_tasks, new_ids, start_date)
+      walk_ahead(all_tasks, new_ids, start_date = start_date)
 
       df <- to_data_frame(all_tasks)
     }
@@ -236,7 +240,7 @@ gantt <- function(df, start_date = Sys.Date()){
       ggplot2::ylab("Task ID")
   }else{
     duration <- sum(df[df$is_critical, ]$duration)
-    end_date <- start_date + duration
+    end_date <- as.Date(start_date) + duration
 
     p <- ggplot2::ggplot(mdfr, ggplot2::aes(mdfr$value, mdfr$name)) +
       ggplot2::geom_line(ggplot2::aes(colour = mdfr$critical), size = 8) +

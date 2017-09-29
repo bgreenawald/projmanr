@@ -55,3 +55,11 @@ test_that("Check that both errors work", {
   expect_error(critical_path(data), "Durations must be non-negative")
 
 })
+
+test_that("Date output is working correctly", {
+  res <- critical_path(taskdata2, gantt = T, network = T, start_date = "2017-10-7")
+  expect_equal(res$end_date, as.Date("2017-10-30"))
+
+  res <- critical_path(taskdata2, gantt = T, network = T)
+  expect_equal(res$end_date, Sys.Date() + 23)
+})

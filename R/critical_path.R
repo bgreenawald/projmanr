@@ -364,3 +364,76 @@ network_diagram <- function(df){
   p <- grDevices::recordPlot()
   p
 }
+
+#' @useDynLib projmanr,.registration = TRUE
+#' @importFrom Rcpp sourceCpp
+NULL
+
+#' Runs a simulation on project end time when certain tasks have uncertain durations
+#'
+#' @param df A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string),
+#' minimum end time, most likely end time, and maximum end time (all in days) for the uncertain tasks in that order.
+#' Rows without observations for the final three columns with not be treated as uncertain tasks.
+#' Name of columns does not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.
+#' @param iter The number of times the simulation should run.
+#' @return A list of results.
+#'
+#' \itemize{
+#' \item \strong{durations} A vector of doubles (of the same size as 'iter') that contains the total project
+#' duration for each itertation of the simulation.
+#' \item \strong{histogram} A histogram of 'durations'
+#' }
+#' @examples
+#' # Example using built in data
+#' simulation(taskdatauncertain1, 10000)
+#'
+#' @export
+simulation <- function(df, iter){
+  print("Setting up simulation.....")
+  
+  # Set up tasks. Only done once
+  data <- df
+  all_tasks <- list()
+  uncertain <- list()
+  for(i in 1:nrow(data)){
+    id <- to_id(data[i, 1])
+    name <- data[i, 2]
+    duration <- data[i, 3]
+    pred_id <- as.character(data[i, 4])
+    new_Task <- Task$new(id, name, duration, pred_id)
+    text <- sprintf("all_tasks <- c(all_tasks, '%s' = new_Task)", new_Task$id)
+    eval(parse(text = text))
+    
+    # If task has additional data, mark it as uncertain and get 'iter' random
+    # samples from the triangle distribution
+    if(!is.na(data[i, 5])){
+      durations <- triangle::rtriangle(n = iter, a = data[i, 5], b = data[i, 7], c = data[i, 6])
+      text <- sprintf("uncertain[['%s']] <- c(durations)", new_Task$id)
+      eval(parse(text = text))
+    }
+  }
+  # If not uncertain tasks, stop method
+  if(length(uncertain) == 1){
+    stop("Error: no tasks are uncertain")
+  }
+  
+  # Get the id's and successors
+  ids <- lapply(data[,1], to_id)
+  invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))
+  
+  # Topologically sort the ids
+  adj_list <- make_node_list(all_tasks, ids)
+  graph <- igraph::graph_from_data_frame(adj_list)
+  sorted_ids <- names(igraph::topo_sort(graph = graph))
+  
+  cols <- c("id", "name", "duration", "preds")
+  data <- data[, 1:4]
+  colnames(data) <- cols
+  total_durations <- simul(data, sorted_ids, iter, uncertain)
+  graphics::hist(total_durations, main = "Distribution of Project End Time")
+  ret <- list()
+  ret$durations <- total_durations
+  ret$histogram <- grDevices::recordPlot()
+  return(ret)
+}
+

@@ -128,6 +128,10 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #'
 #' @export
 gantt <- function(df, start_date = Sys.Date()){
+  # DOES NOTHING, Used to suppress note in check
+  DoesNothing <- R6::R6Class()
+  
+  # ACTUAL CODE STARTS HERE
   raw = F
 
   # Ensure start date type is correct

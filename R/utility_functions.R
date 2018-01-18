@@ -1,6 +1,6 @@
 # Class Defintion ---------------------------------------------------------
 
-
+#' @importFrom R6 R6Class
 Task <- R6::R6Class("Task",
                     public = list(
                       id = NULL,

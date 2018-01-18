@@ -3,3 +3,4 @@
 export(critical_path)
 export(gantt)
 export(network_diagram)
+importFrom(R6,R6Class)

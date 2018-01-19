@@ -162,8 +162,18 @@ gantt <- function(df, start_date = Sys.Date()){
   if(length(ncol(df) > 0)){
     if(ncol(df) == 4){
       raw = T
+    }
+  }
+  # Deal with invalid input
+  else if(is.null(df$results)){
+    stop("Invalid input, raw input should have 4 columns, processed should have 7")
+  }else if(ncol(df$results) != 7){
+    stop("Invalid input, raw input should have 4 columns, processed should have 7")
+  }
 
-      # Do necesary preprocessing
+  # If data is raw, need preprocessing
+  if(raw){
+    # Do necesary preprocessing
       # This is the same as critical path
       data <- df
       all_tasks <- list()
@@ -215,17 +225,9 @@ gantt <- function(df, start_date = Sys.Date()){
       walk_ahead(all_tasks, new_ids, start_date = start_date)
 
       df <- to_data_frame(all_tasks)
-    }
   }
-  # Deal with invalid input
-  else if(is.null(df$results)){
-    stop("Invalid input, raw input should have 4 columns, processed should have 7")
-  }else if(ncol(df$results) != 7){
-    stop("Invalid input, raw input should have 4 columns, processed should have 7")
-  }
-
   # If we know the critical path, color by it
-  if(!raw){
+  else{
     df <- df$results
 
     # Critical elements are red, blue otherwise.

@@ -23,23 +23,41 @@
 #'
 #' @export
 critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
+
+  # Make sure the start date is in the right format
   start_date <- as.Date(start_date)
+
+  # Extract out the data
   data <- df[, 1:4]
+
+  # Create a list to hold the tasks
   all_tasks <- list()
+
+  # For each row, or task, in the input, preprocess.
   for(i in 1:nrow(data)){
+
+    # Extract and process the id and name
     id <- to_id(data[i, 1])
     name <- data[i, 2]
+
+    # Ensure durations are valid
     if(as.numeric(data[i,3]) < 0){
       stop("Durations must be non-negative")
     }
     duration <- data[i, 3]
     pred_id <- as.character(data[i, 4])
+
+    # Create a new task object with the given info and
+    # add it onto the task list
     new_Task <- Task$new(id, name, duration, pred_id)
     text <- sprintf("all_tasks <- c(all_tasks, '%s' = new_Task)", new_Task$id)
     eval(parse(text = text))
   }
 
+  # Create a separate list of ids
   ids <- lapply(data[,1], to_id)
+
+  # Calculate the successors for each task
   invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))
 
   # Topologically sort the ids
@@ -50,6 +68,8 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
   # Create source node
   start_succ_ids <- c()
   for(task in all_tasks){
+    # If a task has no predecessors,
+    # make it a successor of the source node
     if(length(task$predecessor_id) == 0){
       task$predecessor_id <- "%id_source%"
       start_succ_ids <- c(start_succ_ids, task$id)
@@ -59,6 +79,8 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
   # Create a sink node
   end_pred_ids <- ""
   for(task in all_tasks){
+    # If a task has no successors, make
+    # it a successor of the sink node
     if(length(task$successor_id) == 0){
       task$successor_id <- "%id_sink%"
       end_pred_ids <- paste(end_pred_ids, ',', task$id, sep = "")
@@ -92,6 +114,7 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
     ret$gantt <- gantt(ret, start_date = start_date)
   }
 
+  # Calculate the total durations and end date
   ret$total_duration <- sum((ret$results)[(ret$results)$is_critical,]$duration)
   ret$end_date <- start_date + ret$total_duration
   ret$network <- graph
@@ -101,6 +124,7 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
     ret$network_diagram <- network_diagram(ret)
   }
 
+  # Return the results
   ret
 }
 
@@ -133,13 +157,14 @@ gantt <- function(df, start_date = Sys.Date()){
   # Ensure start date type is correct
   start_date <- as.Date(start_date)
 
-  # LOOK AT THESE CONDITIONS
+  # Ensure valid input.
+  # TODO: Write better conditions.
   if(length(ncol(df) > 0)){
     if(ncol(df) == 4){
       raw = T
 
       # Do necesary preprocessing
-
+      # This is the same as critical path
       data <- df
       all_tasks <- list()
       for(i in 1:nrow(data)){
@@ -191,14 +216,19 @@ gantt <- function(df, start_date = Sys.Date()){
 
       df <- to_data_frame(all_tasks)
     }
-  }else if(is.null(df$results)){
+  }
+  # Deal with invalid input
+  else if(is.null(df$results)){
     stop("Invalid input, raw input should have 4 columns, processed should have 7")
   }else if(ncol(df$results) != 7){
     stop("Invalid input, raw input should have 4 columns, processed should have 7")
   }
 
+  # If we know the critical path, color by it
   if(!raw){
     df <- df$results
+
+    # Critical elements are red, blue otherwise.
     if(df[1, "is_critical"] == TRUE){
       cols <- c("#41a9f4", "#f4424b")
     }else{
@@ -232,6 +262,7 @@ gantt <- function(df, start_date = Sys.Date()){
     mdfr[i, "deps"] <- ""
   }
 
+  # Create colored plot if input is not raw, uncolored otherwise.
   if(raw){
     p <- ggplot2::ggplot(mdfr, ggplot2::aes(mdfr$value, mdfr$name)) +
       ggplot2::geom_line(colour = "#41a9f4", size = 8) +
@@ -252,6 +283,7 @@ gantt <- function(df, start_date = Sys.Date()){
       ggplot2::scale_color_manual(values = cols)
   }
 
+  # Return the graph
   p
 }
 
@@ -280,7 +312,8 @@ gantt <- function(df, start_date = Sys.Date()){
 network_diagram <- function(df){
   raw = F
 
-  # LOOK AT THESE CONDITIONS
+  # Check validity of input
+  # TODO: Again, come up with more comprehensive checks
   if(length(ncol(df) > 0)){
     if(ncol(df) == 4){
       raw = T
@@ -291,6 +324,7 @@ network_diagram <- function(df){
     stop("Invalid input, raw input should have 4 columns, processed should have 7")
   }
 
+  # If raw, preprocess the data the same way as critical path
   if(raw){
     data <- df
     all_tasks <- list()
@@ -331,6 +365,7 @@ network_diagram <- function(df){
     graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
 
   }
+  # If not raw, color nodes red for critical, blue otherwise.
   else{
     res <- df$results
     graph <- igraph::simplify(df$network)
@@ -361,6 +396,8 @@ network_diagram <- function(df){
     graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = 20,
          vertex.size2 = 15, edge.arrow.size = 0.65)
   }
+
+  # Save and return the figure
   p <- grDevices::recordPlot()
   p
 }
@@ -390,8 +427,9 @@ NULL
 #' @export
 simulation <- function(df, iter){
   print("Setting up simulation.....")
-  
+
   # Set up tasks. Only done once
+  # The setup is also identical to critical path
   data <- df
   all_tasks <- list()
   uncertain <- list()
@@ -403,7 +441,7 @@ simulation <- function(df, iter){
     new_Task <- Task$new(id, name, duration, pred_id)
     text <- sprintf("all_tasks <- c(all_tasks, '%s' = new_Task)", new_Task$id)
     eval(parse(text = text))
-    
+
     # If task has additional data, mark it as uncertain and get 'iter' random
     # samples from the triangle distribution
     if(!is.na(data[i, 5])){
@@ -416,21 +454,27 @@ simulation <- function(df, iter){
   if(length(uncertain) == 1){
     stop("Error: no tasks are uncertain")
   }
-  
+
   # Get the id's and successors
   ids <- lapply(data[,1], to_id)
   invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))
-  
+
   # Topologically sort the ids
   adj_list <- make_node_list(all_tasks, ids)
   graph <- igraph::graph_from_data_frame(adj_list)
   sorted_ids <- names(igraph::topo_sort(graph = graph))
-  
+
   cols <- c("id", "name", "duration", "preds")
   data <- data[, 1:4]
   colnames(data) <- cols
+
+  # Run the actual simulation.
   total_durations <- simul(data, sorted_ids, iter, uncertain)
+
+  # Graph the results
   graphics::hist(total_durations, main = "Distribution of Project End Time")
+
+  # Return the results
   ret <- list()
   ret$durations <- total_durations
   ret$histogram <- grDevices::recordPlot()

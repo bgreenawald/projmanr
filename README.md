@@ -17,7 +17,7 @@ For the most up to date development version, use:
 
 ```R
 install.packages("devtools")
-devtools::install_github("https://github.com/bgreenawald/projmanr")
+devtools::install_github("bgreenawald/projmanr")
 ```
 
 

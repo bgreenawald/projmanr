@@ -14,8 +14,19 @@ class Task {
 
   public:
 
-    // Fields
-  double duration, est, ef, lst, lf;
+  // Fields
+  /*
+   * est: early start
+   * ef: early finish
+   * lst: late start
+   * lf: late finish
+   * ci: critical index
+   * id: unique identifier
+   * name: name of task
+   * pred_id: ids of predecessors to a given task
+   * succ_id: ids of successors to given task
+   */
+  double duration, est, ef, lst, lf, ci;
   std::string id, name;
   std::vector<std::string> pred_id, succ_id;
 

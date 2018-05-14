@@ -71,7 +71,7 @@ Task::Task(string ids, string names, double dur, string pred){
   id = ids;
   name = names;
   pred_id = split(pred, ',');
-  est = ef = lst = lf = 0;
+  est = ef = lst = lf = ci = 0;
 }
 
 string Task::toString(){
@@ -227,10 +227,16 @@ void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids){
 // Find the actual critical path and gets total duration
 double crit_path(map<string, Task*> tasks){
   double total_duration = 0;
+  // Iterate over every task and see if it is in the critical path
+  // Also use this to update the critical index for a given task
   for(map<string, Task*>::iterator iter = tasks.begin(); iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
+    // Check to see if the current task is critical
     if(abs(cur_task->ef - cur_task->lf) < 0.00001 && abs(cur_task->est - cur_task->lst) < 0.00001){
+      // Update the duration
       total_duration += cur_task->duration;
+      // Update the critical index
+      cur_task->ci++;
     }
   }
   return total_duration;

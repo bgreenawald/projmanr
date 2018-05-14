@@ -471,15 +471,16 @@ simulation <- function(df, iter){
   colnames(data) <- cols
 
   # Run the actual simulation.
-  total_durations <- simul(data, sorted_ids, iter, uncertain)
+  simul_ret <- simul(data, sorted_ids, iter, uncertain)
 
   # Graph the results
-  graphics::hist(total_durations, main = "Distribution of Project End Time")
+  graphics::hist(simul_ret$distributions, main = "Distribution of Project End Time", xlab="Project End Time")
 
   # Return the results
   ret <- list()
-  ret$durations <- total_durations
+  ret$durations <- simul_ret$distributions
   ret$histogram <- grDevices::recordPlot()
+  ret$critical_indexes <- simul_ret$critical_indexes
   return(ret)
 }
 

@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // simul
-std::vector<double> simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::List ls);
+Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::List ls);
 RcppExport SEXP _projmanr_simul(SEXP dfSEXP, SEXP idsSEXP, SEXP numsSEXP, SEXP lsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

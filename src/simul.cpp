@@ -62,7 +62,7 @@ string print_vec(vector<string> vect);
 void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids);
 void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids);
 double crit_path(map<string, Task*> all_tasks);
-std::vector<double> critical_path(map<string, Task*> all_tasks, vector<string> ordered_ids,
+Rcpp::List critical_path(map<string, Task*> all_tasks, vector<string> ordered_ids,
                              int num, map<string, Rcpp::DoubleVector> dists);
 
 // Constructor
@@ -97,7 +97,7 @@ string Task::toString(){
 }
 
 // [[Rcpp::export]]
-std::vector<double> simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::List ls){
+Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::List ls){
 
   // Read in the elements of the data
   Rcpp::CharacterVector task_ids = df["id"];
@@ -243,7 +243,7 @@ double crit_path(map<string, Task*> tasks){
 }
 
 // Wrapper function that performs the entire critical path computation
-vector<double> critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
+Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
                              int num, map<string, Rcpp::DoubleVector> dists){
   // Take care of the source and sink node
   Task* source = new Task("%id_source%", "%id_source%", 0, "");
@@ -291,5 +291,34 @@ vector<double> critical_path(map<string, Task*> tasks, vector<string> ordered_id
     walk_back(tasks, ordered_ids);
     ret[i] = crit_path(tasks);
   }
-  return ret;
+  
+  // Calculate critical index and append results return value
+  // Create vectors of the task ids and critical indexes
+  Rcpp::CharacterVector ci_ids;
+  Rcpp::DoubleVector cis;
+  // Iterate over every task
+  for(map<string, Task*>::iterator iter =tasks.begin(); iter != tasks.end(); ++iter){
+    Task* cur_task = iter->second;
+    
+    // Check to make sure the task isn't the source or sink
+    if(cur_task->get_id() != "%id_sink%" && cur_task->get_id() != "%id_source%"){
+      // Push the current task id onto id list
+      ci_ids.push_back(cur_task->get_id());
+      //Push the current task C.I onto C.I list
+      // AFTER dividing by total number of tasks
+      cis.push_back(cur_task->ci/num);
+    }
+    
+  }
+  
+  // Create a dataframe mapping the task indexes to the 
+  // corresponding critical index
+  Rcpp::DataFrame ret_cis = Rcpp::DataFrame::create( 
+                                        Rcpp::Named("ids")= ci_ids, 
+                                        Rcpp::Named("critical_indexes") = cis);
+  
+  // Construct a return list containing the distributions and 
+  // the critical indexes
+  return Rcpp::List::create(Rcpp::Named("distributions") = ret,
+                            Rcpp::Named("critical_indexes") = ret_cis);
 }

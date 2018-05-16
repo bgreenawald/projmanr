@@ -137,6 +137,12 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #' in that order. These columns need not be named but they must be in that order.
 #' Type 'taskdata1' into the console for an example of raw data.
 #' @param start_date Starting date for the project. Defaults to the current date.
+#' @param color_critical Default: #f4424b (red). The color of the bars for tasks in the critical path.
+#' @param color_non_critical Default: #41a9f4 (light blue). The color of the bars for tasks not in the critical path.
+#' @param bar_size Default: 8. The size of the bars in the Gantt chart.
+#' @param text_size Default: 3. The size of the text in the Gantt chart.
+#' The color of the bars for tasks not in the critical path.
+#' @param 
 #' @return A gantt chart for the tasks. If data has been processed by the critical path function,
 #' then this gantt chart will color the critical path elements.
 #' @examples
@@ -151,7 +157,8 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #' gantt(res)
 #'
 #' @export
-gantt <- function(df, start_date = Sys.Date()){
+gantt <- function(df, start_date = Sys.Date(), color_critical = "#f4424b", 
+                  color_non_critical = "#41a9f4", bar_size = 8, text_size = 3){
   raw = F
 
   # Ensure start date type is correct
@@ -232,9 +239,9 @@ gantt <- function(df, start_date = Sys.Date()){
 
     # Critical elements are red, blue otherwise.
     if(df[1, "is_critical"] == TRUE){
-      cols <- c("#41a9f4", "#f4424b")
+      cols <- c(color_non_critical, color_critical)
     }else{
-      cols <- c("#f4424b", "#41a9f4")
+      cols <- c(color_critical, color_non_critical)
     }
   }
 
@@ -267,8 +274,8 @@ gantt <- function(df, start_date = Sys.Date()){
   # Create colored plot if input is not raw, uncolored otherwise.
   if(raw){
     p <- ggplot2::ggplot(mdfr, ggplot2::aes(mdfr$value, mdfr$name)) +
-      ggplot2::geom_line(colour = "#41a9f4", size = 8) +
-      ggplot2::geom_text(ggplot2::aes(label = mdfr$deps), hjust = 0, nudge_x = 0.05, size = 3) +
+      ggplot2::geom_line(colour = color_non_critical, size = bar_size) +
+      ggplot2::geom_text(ggplot2::aes(label = mdfr$deps), hjust = 0, nudge_x = 0.05, size = text_size) +
       ggplot2::xlab(NULL) +
       ggplot2::ylab("Task ID")
   }else{
@@ -276,8 +283,8 @@ gantt <- function(df, start_date = Sys.Date()){
     end_date <- as.Date(start_date) + duration
 
     p <- ggplot2::ggplot(mdfr, ggplot2::aes(mdfr$value, mdfr$name)) +
-      ggplot2::geom_line(ggplot2::aes(colour = mdfr$critical), size = 8) +
-      ggplot2::geom_text(ggplot2::aes(label = mdfr$deps), hjust = 0, nudge_x = 0.05, size = 3) +
+      ggplot2::geom_line(ggplot2::aes(colour = mdfr$critical), size = bar_size) +
+      ggplot2::geom_text(ggplot2::aes(label = mdfr$deps), hjust = 0, nudge_x = 0.05, size = text_size) +
       ggplot2::xlab(NULL) +
       ggplot2::ylab("Task ID") +
       ggplot2::scale_x_date(limits = c(start_date, end_date + 1)) +

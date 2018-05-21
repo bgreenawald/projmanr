@@ -411,6 +411,7 @@ network_diagram <- function(df){
   p
 }
 
+# Needed to silence some NOTES on Windows
 #' @useDynLib projmanr,.registration = TRUE
 #' @importFrom Rcpp sourceCpp
 NULL
@@ -418,9 +419,13 @@ NULL
 #' Runs a simulation on project end time when certain tasks have uncertain durations
 #'
 #' @param df A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string),
-#' minimum end time, most likely end time, and maximum end time (all in days) for the uncertain tasks in that order.
-#' Rows without observations for the final three columns with not be treated as uncertain tasks.
-#' Name of columns does not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.
+#' type of distrubtion for the uncertain task (currently, "triangle", "uniform", and "normal" are supported), and 
+#' additional hyperparameters for the uncertain task, described below. For "triangle", the next three columns should be
+#' minimum end time, maximum end time (all in days), and most likely end time for the uncertain tasks in that order.
+#' For "uniform", the next two columns should be minimum and maximum end time (in days) for uncertain tasks. For normal,
+#' the next two columns should be mean and standard deviation (in days) of end time.
+#' Tasks with a null value for the distribution (fifth) column will not be treated as uncertain tasks.
+#' Note that names of columns do not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.
 #' @param iter The number of times the simulation should run.
 #' @return A list of results.
 #'
@@ -452,9 +457,24 @@ simulation <- function(df, iter){
     eval(parse(text = text))
 
     # If task has additional data, mark it as uncertain and get 'iter' random
-    # samples from the triangle distribution
-    if(!is.na(data[i, 5])){
-      durations <- triangle::rtriangle(n = iter, a = data[i, 5], b = data[i, 7], c = data[i, 6])
+    # samples from the appropriate distribution distribution
+    if(!is.na(data[i, 5]) && data[i, 5] != ""){
+      # Draw from the appropriate distribution based on the value
+      # in the fifth (distribution) columns
+      
+      # Make sure user has entered a valid distribution
+      if(!(data[i, 5] %in% c("triangle", "uniform", "normal"))){
+        stop(paste("Distribution", data[i,5], "not supported, please use",
+                   "triangle, uniform, or normal"))
+      }
+      
+      # Draw sample from the appropriate distribution using the additional hyperparameters
+      # specified in the 6th through 8th columns
+      durations <- switch(as.character(data[i,5]),
+             triangle = triangle::rtriangle(n = iter, a = data[i, 6], b = data[i, 7], c = data[i, 8]),
+             uniform = runif(n = iter, min = data[i, 6], max = data[i, 7]),
+             normal = rnorm(n = iter, mean = data[i, 6], sd = data[i, 7]))
+      
       text <- sprintf("uncertain[['%s']] <- c(durations)", new_Task$id)
       eval(parse(text = text))
     }

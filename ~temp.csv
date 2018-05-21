@@ -1,0 +1,15 @@
+id,name,duration,preds,distribution,,,
+12,T1,3,,,NA,NA,NA
+2,T2,4,12,,NA,NA,NA
+3,T3,2,12,,NA,NA,NA
+4,T4,5,2,triangle,3,6,5
+5,T5,1,3,,NA,NA,NA
+6,T6,2,"3,9 ",,NA,NA,NA
+7,T7,4,"4,5 ",,NA,NA,NA
+8,T8,3,"6,7",,NA,NA,NA
+9,T9,5,12,,NA,NA,NA
+10,T10,3,9,triangle,1,7,3
+11,T11,6,10,,NA,NA,NA
+13,T13,8,2,,NA,NA,NA
+14,T14,9,"3,4",,NA,NA,NA
+15,T15,2,14,,NA,NA,NA

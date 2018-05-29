@@ -8,9 +8,13 @@ simulation(df, iter)
 }
 \arguments{
 \item{df}{A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string),
-minimum end time, most likely end time, and maximum end time (all in days) for the uncertain tasks in that order.
-Rows without observations for the final three columns with not be treated as uncertain tasks.
-Name of columns does not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.}
+type of distrubtion for the uncertain task (currently, "triangle", "uniform", and "normal" are supported), and 
+additional hyperparameters for the uncertain task, described below. For "triangle", the next three columns should be
+minimum end time, maximum end time (all in days), and most likely end time for the uncertain tasks in that order.
+For "uniform", the next two columns should be minimum and maximum end time (in days) for uncertain tasks. For normal,
+the next two columns should be mean and standard deviation (in days) of end time.
+Tasks with a null value for the distribution (fifth) column will not be treated as uncertain tasks.
+Note that names of columns do not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.}
 
 \item{iter}{The number of times the simulation should run.}
 }

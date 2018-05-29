@@ -142,7 +142,6 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 #' @param bar_size Default: 8. The size of the bars in the Gantt chart.
 #' @param text_size Default: 3. The size of the text in the Gantt chart.
 #' The color of the bars for tasks not in the critical path.
-#' @param 
 #' @return A gantt chart for the tasks. If data has been processed by the critical path function,
 #' then this gantt chart will color the critical path elements.
 #' @examples

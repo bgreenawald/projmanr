@@ -463,7 +463,7 @@ simulation <- function(df, iter){
       
       # Make sure user has entered a valid distribution
       if(!(data[i, 5] %in% c("triangle", "uniform", "normal"))){
-        stop(paste("Distribution", data[i,5], "not supported, please use",
+        stop(paste("Distribution ", data[i,5], " not supported, please use",
                    "triangle, uniform, or normal"))
       }
       

@@ -9,14 +9,14 @@ context("Critican Path on taskdatauncertain1")
 test_that("Check the return size of simulation", {
   res <- simulation(taskdatauncertain1, 100)
   expect_equal(length(res), 3)
-  expect_equal(length(res$critical_indexes), 100)
+  expect_equal(length(res$durations), 100)
   expect_equal(nrow(res$critical_indexes), 14)
   
   # Run the same tests, change the itr parameter to 
   # ensure that it's working
   res <- simulation(taskdatauncertain1, 1000)
   expect_equal(length(res), 3)
-  expect_equal(length(res$critical_indexes), 1000)
+  expect_equal(length(res$durations), 1000)
   expect_equal(nrow(res$critical_indexes), 14)
 })
 
@@ -25,7 +25,7 @@ test_that("Make sure the the error check on distribution works", {
   temp[4, 5] <- "t"
   
   expect_error(simulation(temp, 100), paste("Distribution t not supported,",
-                                      " please use triangle, uniform, or normal"))
+                                      "please use triangle, uniform, or normal"))
   
 })
 

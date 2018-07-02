@@ -471,8 +471,8 @@ simulation <- function(df, iter){
       # specified in the 6th through 8th columns
       durations <- switch(as.character(data[i,5]),
              triangle = triangle::rtriangle(n = iter, a = data[i, 6], b = data[i, 7], c = data[i, 8]),
-             uniform = runif(n = iter, min = data[i, 6], max = data[i, 7]),
-             normal = rnorm(n = iter, mean = data[i, 6], sd = data[i, 7]))
+             uniform = stats::runif(n = iter, min = data[i, 6], max = data[i, 7]),
+             normal = stats::rnorm(n = iter, mean = data[i, 6], sd = data[i, 7]))
       durations[durations < 0] <- 0
       text <- sprintf("uncertain[['%s']] <- c(durations)", new_Task$id)
       eval(parse(text = text))

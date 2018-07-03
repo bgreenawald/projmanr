@@ -24,8 +24,8 @@ test_that("Make sure the the error check on distribution works", {
   temp <- taskdatauncertain1
   temp[4, 5] <- "t"
   
-  expect_error(simulation(temp, 100), paste("Distribution t not supported,",
-                                      "please use triangle, uniform, or normal"))
+  expect_error(simulation(temp, 100), paste("Distribution t not supported, please use",
+                                      "triangle, pert, uniform, normal or log_normal"))
   
 })
 

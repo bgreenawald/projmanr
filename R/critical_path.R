@@ -418,10 +418,10 @@ NULL
 #' Runs a simulation on project end time when certain tasks have uncertain durations
 #'
 #' @param df A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string),
-#' type of distrubtion for the uncertain task (currently, "triangle", "uniform", and "normal" are supported), and 
-#' additional hyperparameters for the uncertain task, described below. For "triangle", the next three columns should be
-#' minimum end time, maximum end time (all in days), and most likely end time for the uncertain tasks in that order.
-#' For "uniform", the next two columns should be minimum and maximum end time (in days) for uncertain tasks. For normal,
+#' type of distrubtion for the uncertain task (currently, "triangle", "pert", "uniform", "normal" and "log_normal" are supported), and 
+#' additional hyperparameters for the uncertain task, described below. For "triangle" and "pert", the next three columns should be
+#' minimum end time, maximum end time, and most likely end time (all in days) for the uncertain tasks in that order.
+#' For "uniform", the next two columns should be minimum and maximum end time (in days) for uncertain tasks. For "normal" and "log_normal",
 #' the next two columns should be mean and standard deviation (in days) of end time.
 #' Tasks with a null value for the distribution (fifth) column will not be treated as uncertain tasks.
 #' Note that names of columns do not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.
@@ -462,17 +462,21 @@ simulation <- function(df, iter){
       # in the fifth (distribution) columns
       
       # Make sure user has entered a valid distribution
-      if(!(data[i, 5] %in% c("triangle", "uniform", "normal"))){
+      if(!(data[i, 5] %in% c("triangle", "uniform", "normal", "log_normal", "pert"))){
         stop(paste("Distribution", data[i,5], "not supported, please use",
-                   "triangle, uniform, or normal"))
+                   "triangle, pert, uniform, normal or log_normal"))
       }
       
       # Draw sample from the appropriate distribution using the additional hyperparameters
       # specified in the 6th through 8th columns
       durations <- switch(as.character(data[i,5]),
-             triangle = triangle::rtriangle(n = iter, a = data[i, 6], b = data[i, 7], c = data[i, 8]),
+             triangle = mc2d::rtriang(n = iter, min = data[i, 6], mode = data[i, 8], max = data[i, 7]),
+             pert = mc2d::rpert(n = iter, min = data[i, 6], mode = data[i, 8], max = data[i, 7]),
              uniform = stats::runif(n = iter, min = data[i, 6], max = data[i, 7]),
-             normal = stats::rnorm(n = iter, mean = data[i, 6], sd = data[i, 7]))
+             normal = stats::rnorm(n = iter, mean = data[i, 6], sd = data[i, 7]),
+             log_normal = stats::rlnorm(n = iter, mean = data[i, 6], sd = data[i, 7])
+             )
+      # Make sure no duration is negative
       durations[durations < 0] <- 0
       text <- sprintf("uncertain[['%s']] <- c(durations)", new_Task$id)
       eval(parse(text = text))

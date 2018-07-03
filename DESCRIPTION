@@ -18,7 +18,7 @@ Imports:
 	igraph (>= 1.0.1),
 	ggplot2 (>= 2.2.1),
 	tidyr (>= 0.6.3),
-	triangle(>= 0.11),
+	mc2d(>= 0.1-18),
     Rcpp
 RoxygenNote: 6.0.1
 Depends: R (>= 3.3.0)

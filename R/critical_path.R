@@ -425,7 +425,7 @@ NULL
 #' the next two columns should be mean and standard deviation (in days) of end time.
 #' Tasks with a null value for the distribution (fifth) column will not be treated as uncertain tasks.
 #' Note that names of columns do not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.
-#' @param iter The number of times the simulation should run.
+#' @param iter Default: 1000. The number of times the simulation should run.
 #' @return A list of results.
 #'
 #' \itemize{
@@ -438,7 +438,7 @@ NULL
 #' simulation(taskdatauncertain1, 10000)
 #'
 #' @export
-simulation <- function(df, iter){
+simulation <- function(df, iter = 100){
   print("Setting up simulation.....")
 
   # Set up tasks. Only done once

@@ -4,7 +4,7 @@
 \alias{simulation}
 \title{Runs a simulation on project end time when certain tasks have uncertain durations}
 \usage{
-simulation(df, iter)
+simulation(df, iter = 100)
 }
 \arguments{
 \item{df}{A data frame of tasks with columns ID, name, duration, id's of predecessrs (as a comma separated string),
@@ -16,7 +16,7 @@ the next two columns should be mean and standard deviation (in days) of end time
 Tasks with a null value for the distribution (fifth) column will not be treated as uncertain tasks.
 Note that names of columns do not matter, only order. Type 'taskdatauncertain1' into the console for an example of valid data.}
 
-\item{iter}{The number of times the simulation should run.}
+\item{iter}{Default: 1000. The number of times the simulation should run.}
 }
 \value{
 A list of results.

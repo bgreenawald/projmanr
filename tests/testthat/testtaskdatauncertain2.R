@@ -6,6 +6,11 @@ library(ggplot2)
 
 context("Critican Path on taskdatauncertain2")
 
+test_that("Check approximate value of duration mean", {
+  res <- simulation(taskdatauncertain1, 1000)
+  expect_equal(mean(res$durations) > 22 && mean(res$durations) < 24, TRUE)
+})
+
 test_that("Check the return size of simulation", {
   res <- simulation(taskdatauncertain2, 100)
   expect_equal(length(res), 3)

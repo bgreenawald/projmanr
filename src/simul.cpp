@@ -62,8 +62,9 @@ string print_vec(vector<string> vect);
 void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids);
 void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids);
 double crit_path(map<string, Task*> all_tasks);
-Rcpp::List critical_path(map<string, Task*> all_tasks, vector<string> ordered_ids,
-                             int num, map<string, Rcpp::DoubleVector> dists);
+Rcpp::List critical_path(map<string, Task*> all_tasks,
+                         vector<string> ordered_ids,
+                         int num, map<string, Rcpp::DoubleVector> dists);
 
 // Constructor
 Task::Task(string ids, string names, double dur, string pred){
@@ -91,13 +92,14 @@ string Task::toString(){
   strs3 << lf;
   std::string lf_str = strs3.str();
 
-  return id + ": " + "\n" + "preds: " + print_vec(pred_id) + "\nsucc: " + print_vec(succ_id) +
-    "\nest: " + est_str + "\nef: " + ef_str + "\nlst: " + lst_str +
-    "\nlf: " + lf_str + "\n\n";
+  return id + ": " + "\n" + "preds: " + print_vec(pred_id) + "\nsucc: " + 
+    print_vec(succ_id) + "\nest: " + est_str + "\nef: " + ef_str + 
+    "\nlst: " + lst_str + "\nlf: " + lf_str + "\n\n";
 }
 
 // [[Rcpp::export]]
-Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::List ls){
+Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, 
+                 int nums, Rcpp::List ls){
 
   // Read in the elements of the data
   Rcpp::CharacterVector task_ids = df["id"];
@@ -119,7 +121,8 @@ Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, int nums, Rcpp::
 
   for(int i = 0; i < ids.size(); i++){
     string temp_id = Rcpp::as<string>(task_ids[i]);
-    Task* temp = new Task(temp_id, Rcpp::as<string>(names[i]), durations[i], Rcpp::as<string>(preds[i]));
+    Task* temp = new Task(temp_id, Rcpp::as<string>(names[i]), 
+                          durations[i], Rcpp::as<string>(preds[i]));
     all_tasks.insert(pair<string, Task*>(temp_id, temp));
     ordered_id.push_back(Rcpp::as<string>(ids[i]));
   }
@@ -156,15 +159,18 @@ string trim(const string& str) {
 // Get the successors for each task
 void get_successors(map<string, Task*> tasks){
   // Iterate over each task
-  for(map<string, Task*>::iterator iter = tasks.begin(); iter != tasks.end(); ++iter){
+  for(map<string, Task*>::iterator iter = tasks.begin(); 
+      iter != tasks.end(); ++iter){
     Task* current_task = iter->second;
     vector<string> temp_succ;
 
     // Iterate over each task again, comparing the current task to each list of predeccessors
-    for(map<string, Task*>::iterator iter2 = tasks.begin(); iter2 != tasks.end(); ++iter2){
+    for(map<string, Task*>::iterator iter2 = tasks.begin(); 
+        iter2 != tasks.end(); ++iter2){
       Task* temp = iter2->second;
       vector<string> pred_ids = temp->pred_id;
-      if(std::find(pred_ids.begin(), pred_ids.end(), current_task->get_id()) != pred_ids.end()){
+      if(std::find(pred_ids.begin(), pred_ids.end(),
+                   current_task->get_id()) != pred_ids.end()){
         temp_succ.push_back(temp->id);
       }
     }
@@ -184,13 +190,16 @@ string print_vec(vector<string> vect){
 
 // Perform the walk ahead step of the critical path
 void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::iterator it = ordered_ids.begin() ; it != ordered_ids.end(); ++it){
+  for(vector<string>::iterator it = ordered_ids.begin(); 
+      it != ordered_ids.end(); ++it){
     Task* current_task = all_tasks[*it];
     vector<string> preds = current_task->pred_id;
     if(preds.size() != 0){
-      for(vector<string>::iterator it2 = preds.begin() ; it2 != preds.end(); ++it2){
+      for(vector<string>::iterator it2 = preds.begin(); 
+          it2 != preds.end(); ++it2){
         if(std::find(preds.begin(), preds.end(), *it2) == preds.end()){
-          throw "Invalid predeccessor id. Using a predeccessor id for a task that does not exist.";
+          throw std::string("Invalid predeccessor id. Using a predeccessor") +
+            std::string("id for a task that does not exist.");
         }
         Task* pred_task = all_tasks[*it2];
         if(current_task->est <= pred_task->ef){
@@ -204,13 +213,16 @@ void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
 
 // Perform the walk back of the critical path
 void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::reverse_iterator it = ordered_ids.rbegin() ; it != ordered_ids.rend(); ++it){
+  for(vector<string>::reverse_iterator it = ordered_ids.rbegin(); 
+      it != ordered_ids.rend(); ++it){
     Task* current_task = all_tasks[*it];
     vector<string> succ = current_task->succ_id;
     if(succ.size() != 0){
-      for(vector<string>::iterator it2 = succ.begin() ; it2 != succ.end(); ++it2){
+      for(vector<string>::iterator it2 = succ.begin();
+          it2 != succ.end(); ++it2){
         if(std::find(succ.begin(), succ.end(), *it2) == succ.end()){
-          throw "Invalid predeccessor id. Using a predeccessor id for a task that does not exist.";
+          throw std::string("Invalid predeccessor id. Using a predeccessor") +
+            std::string("id for a task that does not exist.");
         }
         Task* succ_task = all_tasks[*it2];
         if(current_task->lf == 0 || current_task->lf > succ_task->lst){
@@ -229,10 +241,12 @@ double crit_path(map<string, Task*> tasks){
   double total_duration = 0;
   // Iterate over every task and see if it is in the critical path
   // Also use this to update the critical index for a given task
-  for(map<string, Task*>::iterator iter = tasks.begin(); iter != tasks.end(); ++iter){
+  for(map<string, Task*>::iterator iter = tasks.begin(); 
+      iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
     // Check to see if the current task is critical
-    if(abs(cur_task->ef - cur_task->lf) < 0.00001 && abs(cur_task->est - cur_task->lst) < 0.00001){
+    if(abs(cur_task->ef - cur_task->lf) < 0.00001 && 
+       abs(cur_task->est - cur_task->lst) < 0.00001){
       // Update the duration
       total_duration += cur_task->duration;
       // Update the critical index
@@ -250,7 +264,8 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
   Task* sink = new Task("%id_sink%", "%id_sink%", 0, "");
   vector<string> source_succ;
   vector<string> sink_pred;
-  for(map<string, Task*>::iterator iter = tasks.begin(); iter != tasks.end(); ++iter){
+  for(map<string, Task*>::iterator iter = tasks.begin(); 
+      iter != tasks.end(); ++iter){
     Task* cur = iter->second;
     if((cur->pred_id).size() == 0){
       (cur->pred_id).push_back("%id_source%");
@@ -277,12 +292,14 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
     Rcpp::checkUserInterrupt();
 
     // Reset all tasks
-    for(map<string, Task*>::iterator iter = tasks.begin(); iter != tasks.end(); ++iter){
+    for(map<string, Task*>::iterator iter = tasks.begin(); 
+        iter != tasks.end(); ++iter){
       iter->second->reset();
     }
 
     // Get the new duration for certain tasks
-    for(map<string, Rcpp::DoubleVector>::iterator iter = dists.begin(); iter != dists.end(); ++iter){
+    for(map<string, Rcpp::DoubleVector>::iterator iter = dists.begin(); 
+        iter != dists.end(); ++iter){
       tasks[iter->first]->duration = dists[iter->first][i];
     }
 
@@ -297,11 +314,13 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
   Rcpp::CharacterVector ci_ids;
   Rcpp::DoubleVector cis;
   // Iterate over every task
-  for(map<string, Task*>::iterator iter =tasks.begin(); iter != tasks.end(); ++iter){
+  for(map<string, Task*>::iterator iter =tasks.begin(); 
+      iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
     
     // Check to make sure the task isn't the source or sink
-    if(cur_task->get_id() != "%id_sink%" && cur_task->get_id() != "%id_source%"){
+    if(cur_task->get_id() != "%id_sink%" && 
+       cur_task->get_id() != "%id_source%"){
       // Push the current task id onto id list
       ci_ids.push_back(cur_task->get_id());
       //Push the current task C.I onto C.I list

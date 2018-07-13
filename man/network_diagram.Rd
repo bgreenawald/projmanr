@@ -8,15 +8,16 @@ network_diagram(df)
 }
 \arguments{
 \item{df}{Task input. This can either be a data frame of raw data
-(i.e not from the 'critical_path' function) or can the return value from calling
-the 'critical path' function.
+(i.e not from the 'critical_path' function) or can the return value
+from calling the 'critical path' function.
 If the data is raw, if must have columns "ID, name, duration, dependencies"
-in that order. These columns need not be named but they must be in that order.
-Type 'taskdata1' into the console for an example of raw data.}
+in that order. These columns need not be named but they must be
+in that order. Type 'taskdata1' into the console for an example of raw data.}
 }
 \value{
-A network diagram for the tasks. If data has been processed by the critical path function,
-then this network diagram will color the critical path elements.
+A network diagram for the tasks. If data has been processed by
+the critical path function, then this network diagram will color the
+critical path elements.
 }
 \description{
 Creates a network diagram of tasks in a project.

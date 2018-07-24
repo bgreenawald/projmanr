@@ -1,5 +1,5 @@
 # Class Defintion ---------------------------------------------------------
-
+# This class is used to represent a "task" in our R program.
 #' @importFrom R6 R6Class
 Task <- R6::R6Class("Task",
                     public = list(
@@ -16,7 +16,9 @@ Task <- R6::R6Class("Task",
                       is_critical = NULL,
                       start_date = NULL,
                       end_date = NULL,
-                      initialize = function(id = NA, name = NA, duration = NA, predecessor_id = NA){
+                      initialize = function(id = NA, name = NA,
+                                            duration = NA,
+                                            predecessor_id = NA){
                         self$id <- to_id(id)
                         self$name <- name
                         self$duration <- as.numeric(duration)
@@ -35,7 +37,9 @@ Task <- R6::R6Class("Task",
 # Functions ---------------------------------------------------------------
 
 
-# Function to handle reading of processor ids
+# Function to handle reading of predecessor ids
+# ensuring that we have a consitent id format
+# by removing whitespace and removing null ids
 proc_ids <- function(ids){
   ids <- strsplit(ids, ",")
   ids <- lapply(ids, trimws)
@@ -53,8 +57,12 @@ to_id <- function(id){
 get_successor <- function(task, full_tasks){
   ret_ids <- NULL
   task_id <- task$id
-  for(cur_task in full_tasks){
-    if(task_id %in% unlist(cur_task$predecessor_id)){
+
+  # For each task we have, check and see if the current
+  # task exists in its list of predecessors, and if it
+  # does, add it to the current task's list of successors
+  for (cur_task in full_tasks) {
+    if (task_id %in% unlist(cur_task$predecessor_id)) {
       ret_ids <- c(ret_ids, cur_task$id)
     }
   }
@@ -62,65 +70,101 @@ get_successor <- function(task, full_tasks){
   return(NULL)
 }
 
-# Function to walk ahead
+# Implementation of the 'walk ahead' portion of the
+# critical path algorithm
 walk_ahead <- function(map, ids, start_date = Sys.Date()){
+  # Perform the walk ahead for each task in the project.
+  # It is assumed at this point that the ids have been sorted
+  # 'chronologically' in which each task id appears before any
+  # succesor task id.
+  for (cur in ids) {
+    # Get the task corresponding to the current id
+    current_task <- map[[cur]]
 
-  for(cur in ids){
-    exp <- sprintf("map$'%s'", cur)
-    current_task <- eval(parse(text = exp))
-    if(length(current_task$predecessor_id) == 0){
-      current_task$early_finish <- current_task$early_start + current_task$duration
+    # If our task has no predecessors, we can set the start date
+    # to whatever was input
+    if (length(current_task$predecessor_id) == 0) {
       current_task$start_date <- start_date
-    }else{
-      for(id in current_task$predecessor_id){
-        exp <- sprintf("map$'%s'", id)
-        pred_task <- eval(parse(text = exp))
-        if(is.null(pred_task)){
-          stop("Invalid predeccessor id. Using a predeccessor id for a task that does not exist.")
+    }
+    # If we do have predecessors, find the one that finishes last
+    else{
+      # Iterate over all predecessors
+      for (id in current_task$predecessor_id) {
+        pred_task <- map[[id]]
+        if (is.null(pred_task)) {
+          stop(paste("Invalid predeccessor id. Using a predeccessor",
+               "id for a task that does not exist."))
         }
-        if(current_task$early_start <= pred_task$early_finish){
+        # If the current predecessors after before the current
+        # task starts, update the start values
+        if (current_task$early_start <= pred_task$early_finish) {
           current_task$early_start <- pred_task$early_finish
-          current_task$start_date <- pred_task$start_date + pred_task$duration
+          current_task$start_date <- pred_task$start_date +
+            pred_task$duration
         }
       }
     }
-    current_task$early_finish <- current_task$early_start + current_task$duration
-    current_task$end_date <- current_task$start_date + current_task$duration
+
+    # After we have checked all of the predecessors, we can update the current
+    # tasks early finish and end date
+    current_task$early_finish <- current_task$early_start +
+      current_task$duration
+    current_task$end_date <- current_task$start_date +
+      current_task$duration
   }
 }
 
-# Function to walk back
+# Implement the 'walk back' portion of the algorithm
 walk_back <- function(map, ids){
+  # Again, iterate over each id, but this time in reverse
+  # order. Now, a task is always going to show up before
+  # any of its predecessors.
+  for (cur in rev(ids)) {
+    # Get the task corresponding to the current id
+    current_task <- map[[cur]]
 
-  for(cur in rev(ids)){
-    exp <- sprintf("map$'%s'", cur)
-    current_task <- eval(parse(text = exp))
-    if(length(current_task$successor_id) == 0){
+    # If we have no successors, we can update late finish
+    # right away
+    if (length(current_task$successor_id) == 0) {
       current_task$late_finish <- current_task$early_finish
     }
-    for(id in current_task$successor_id){
-      exp <- sprintf("map$'%s'", id)
-      succ_task <- eval(parse(text = exp))
-      if(current_task$late_finish == 0){
-        current_task$late_finish <- succ_task$late_start
-      }else{
-        if(current_task$late_finish > succ_task$late_start){
+    # If we do have successors, we must find the one that
+    # finishes earliest
+    else{
+      # Iterate over each successor task id
+      for (id in current_task$successor_id) {
+        succ_task <- map[[id]]
+
+        # If the current task does not yet have a late
+        # finish, assign it at the first task we find.
+        if (current_task$late_finish == 0) {
           current_task$late_finish <- succ_task$late_start
+        }else{
+          # If the successor starts earlier than we finish,
+          # we update our last finish time.
+          if (current_task$late_finish > succ_task$late_start) {
+            current_task$late_finish <- succ_task$late_start
+          }
         }
       }
     }
-    current_task$late_start <- current_task$late_finish - current_task$duration
+
+    # After we have iterate, we can record the final late start value.
+    current_task$late_start <- current_task$late_finish -
+      current_task$duration
   }
 }
 
-# Calculate the critical path
+# Implement the actual finding of critical path.
+# Assuming both walk ahead and walk back have been computed.
 crit_path <- function(ids, map){
   c_path <- NULL
 
-  for(id in ids){
-    exp <- sprintf("map$'%s'", id)
-    task <- eval(parse(text = exp))
-    if(task$early_finish == task$late_finish && task$early_start == task$late_start){
+  # For each task, check if it meets the requirements for critical path.
+  for (id in ids) {
+    task <- map[[id]]
+    if (task$early_finish == task$late_finish &&
+        task$early_start == task$late_start) {
       c_path <- c(c_path, task$id)
       task$is_critical <- TRUE
     }else{
@@ -133,6 +177,8 @@ crit_path <- function(ids, map){
 
 # Converts result to data frame for gantt chart
 to_data_frame <- function(tasks){
+
+  # Create a dataframe to hold the tasks.
   df <- data.frame(id <- character(),
                    name <- character(),
                    start_date <- double(),
@@ -141,9 +187,11 @@ to_data_frame <- function(tasks){
                    is_critical <- logical(),
                    pred_id <- character())
 
-  for(task in tasks){
-    if(task$id != "%id_source%" && task$id != "%id_sink%"){
-      if(task$predecessor_id[1] == "%id_source%"){
+  # For each task, extract the necesary information and
+  # add it to the dataframe.
+  for (task in tasks) {
+    if (task$id != "%id_source%" && task$id != "%id_sink%") {
+      if (task$predecessor_id[1] == "%id_source%") {
         task$predecessor_id <- ""
       }
       df <- rbind(df, data.frame(id <- task$id,
@@ -152,23 +200,29 @@ to_data_frame <- function(tasks){
                                  end_date <- task$end_date,
                                  duration <- task$duration,
                                  is_critical <- task$is_critical,
-                                 pred_id <- paste(c(task$predecessor_id, " "), collapse = " "))
+                                 pred_id <- paste(c(task$predecessor_id, " "),
+                                 collapse = " "))
       )
     }
   }
-  colnames(df) <- c("id", "name", "start_date", "end_date", "duration", "is_critical", "pred_id")
+  colnames(df) <- c("id", "name", "start_date",
+                    "end_date", "duration", "is_critical", "pred_id")
   return(df)
 }
 
 # Produces a list to be handled by the graph
+# so that the network may be visualized and
+# tasks may be topologically sorted.
 make_node_list <- function(map, all_ids){
   ids <- character()
   successor <- character()
 
-  for(id in all_ids){
-    exp <- sprintf("map$'%s'", id)
-    succ_task <- eval(parse(text = exp))
-    for(id2 in succ_task$successor_id){
+  # Iterate over each task,
+  # keeping track of the task and its
+  # succesors.
+  for (id in all_ids) {
+    succ_task <- map[[id]]
+    for (id2 in succ_task$successor_id) {
       ids <- c(ids, id)
       successor <- c(successor, id2)
     }
@@ -176,7 +230,7 @@ make_node_list <- function(map, all_ids){
 
   ret <- data.frame(id = ids,
                     successor = successor,
-                    stringsAsFactors=FALSE)
+                    stringsAsFactors = FALSE)
 
   return(ret)
 }

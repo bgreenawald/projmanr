@@ -3,4 +3,7 @@
 .RData
 .Ruserdata
 projmanr.Rproj
-revdep/
+Rplots.pdf
+revdep
+*.orig
+#.csv

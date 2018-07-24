@@ -1,5 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^cran-comments\.md$
+^\.travis\.yml$task 
 ^\.travis\.yml$
 ^revdep$
+^.*\.orig$

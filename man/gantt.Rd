@@ -4,21 +4,35 @@
 \alias{gantt}
 \title{Creates a Gantt chart of tasks in a project.}
 \usage{
-gantt(df, start_date = Sys.Date())
+gantt(df, start_date = Sys.Date(), color_critical = "#f4424b",
+  color_non_critical = "#41a9f4", bar_size = 8, text_size = 3)
 }
 \arguments{
 \item{df}{Task input. This can either be a data frame of raw data
-(i.e not from the 'critical_path' function) or can the return value from calling
-the 'critical path' function.
-If the data is raw, if must have columns "ID, name, duration, dependencies"
-in that order. These columns need not be named but they must be in that order.
-Type 'taskdata1' into the console for an example of raw data.}
+(i.e not from the 'critical_path' function) or can the return value
+from calling the 'critical path' function. If the data is raw, if must
+have columns "ID, name, duration, dependencies" in that order. These
+columns need not be named but they must be in that order. Type 'taskdata1'
+into the console for an example of raw data.}
 
-\item{start_date}{Starting date for the project. Defaults to the current date.}
+\item{start_date}{Starting date for the project. Defaults to the current
+date.}
+
+\item{color_critical}{Default: #f4424b (red). The color of the bars for
+tasks in the critical path.}
+
+\item{color_non_critical}{Default: #41a9f4 (light blue). The color of
+the bars for tasks not in the critical path.}
+
+\item{bar_size}{Default: 8. The size of the bars in the Gantt chart.}
+
+\item{text_size}{Default: 3. The size of the text in the Gantt chart.
+The color of the bars for tasks not in the critical path.}
 }
 \value{
-A gantt chart for the tasks. If data has been processed by the critical path function,
-then this gantt chart will color the critical path elements.
+A gantt chart for the tasks. If data has been processed by the
+critical path function, then this gantt chart will color the critical
+path elements.
 }
 \description{
 Creates a Gantt chart of tasks in a project.

@@ -92,13 +92,13 @@ string Task::toString(){
   strs3 << lf;
   std::string lf_str = strs3.str();
 
-  return id + ": " + "\n" + "preds: " + print_vec(pred_id) + "\nsucc: " + 
-    print_vec(succ_id) + "\nest: " + est_str + "\nef: " + ef_str + 
+  return id + ": " + "\n" + "preds: " + print_vec(pred_id) + "\nsucc: " +
+    print_vec(succ_id) + "\nest: " + est_str + "\nef: " + ef_str +
     "\nlst: " + lst_str + "\nlf: " + lf_str + "\n\n";
 }
 
 // [[Rcpp::export]]
-Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids, 
+Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids,
                  int nums, Rcpp::List ls){
 
   // Read in the elements of the data
@@ -121,7 +121,7 @@ Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids,
 
   for(int i = 0; i < ids.size(); i++){
     string temp_id = Rcpp::as<string>(task_ids[i]);
-    Task* temp = new Task(temp_id, Rcpp::as<string>(names[i]), 
+    Task* temp = new Task(temp_id, Rcpp::as<string>(names[i]),
                           durations[i], Rcpp::as<string>(preds[i]));
     all_tasks.insert(pair<string, Task*>(temp_id, temp));
     ordered_id.push_back(Rcpp::as<string>(ids[i]));
@@ -159,13 +159,13 @@ string trim(const string& str) {
 // Get the successors for each task
 void get_successors(map<string, Task*> tasks){
   // Iterate over each task
-  for(map<string, Task*>::iterator iter = tasks.begin(); 
+  for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* current_task = iter->second;
     vector<string> temp_succ;
 
     // Iterate over each task again, comparing the current task to each list of predeccessors
-    for(map<string, Task*>::iterator iter2 = tasks.begin(); 
+    for(map<string, Task*>::iterator iter2 = tasks.begin();
         iter2 != tasks.end(); ++iter2){
       Task* temp = iter2->second;
       vector<string> pred_ids = temp->pred_id;
@@ -190,12 +190,12 @@ string print_vec(vector<string> vect){
 
 // Perform the walk ahead step of the critical path
 void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::iterator it = ordered_ids.begin(); 
+  for(vector<string>::iterator it = ordered_ids.begin();
       it != ordered_ids.end(); ++it){
     Task* current_task = all_tasks[*it];
     vector<string> preds = current_task->pred_id;
     if(preds.size() != 0){
-      for(vector<string>::iterator it2 = preds.begin(); 
+      for(vector<string>::iterator it2 = preds.begin();
           it2 != preds.end(); ++it2){
         if(std::find(preds.begin(), preds.end(), *it2) == preds.end()){
           throw std::string("Invalid predeccessor id. Using a predeccessor") +
@@ -213,7 +213,7 @@ void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
 
 // Perform the walk back of the critical path
 void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::reverse_iterator it = ordered_ids.rbegin(); 
+  for(vector<string>::reverse_iterator it = ordered_ids.rbegin();
       it != ordered_ids.rend(); ++it){
     Task* current_task = all_tasks[*it];
     vector<string> succ = current_task->succ_id;
@@ -241,11 +241,11 @@ double crit_path(map<string, Task*> tasks){
   double total_duration = 0;
   // Iterate over every task and see if it is in the critical path
   // Also use this to update the critical index for a given task
-  for(map<string, Task*>::iterator iter = tasks.begin(); 
+  for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
     // Check to see if the current task is critical
-    if(abs(cur_task->ef - cur_task->lf) < 0.00001 && 
+    if(abs(cur_task->ef - cur_task->lf) < 0.00001 &&
        abs(cur_task->est - cur_task->lst) < 0.00001){
       // Update the duration
       total_duration += cur_task->duration;
@@ -264,7 +264,7 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
   Task* sink = new Task("%id_sink%", "%id_sink%", 0, "");
   vector<string> source_succ;
   vector<string> sink_pred;
-  for(map<string, Task*>::iterator iter = tasks.begin(); 
+  for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* cur = iter->second;
     if((cur->pred_id).size() == 0){
@@ -292,13 +292,13 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
     Rcpp::checkUserInterrupt();
 
     // Reset all tasks
-    for(map<string, Task*>::iterator iter = tasks.begin(); 
+    for(map<string, Task*>::iterator iter = tasks.begin();
         iter != tasks.end(); ++iter){
       iter->second->reset();
     }
 
     // Get the new duration for certain tasks
-    for(map<string, Rcpp::DoubleVector>::iterator iter = dists.begin(); 
+    for(map<string, Rcpp::DoubleVector>::iterator iter = dists.begin();
         iter != dists.end(); ++iter){
       tasks[iter->first]->duration = dists[iter->first][i];
     }
@@ -308,18 +308,18 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
     walk_back(tasks, ordered_ids);
     ret[i] = crit_path(tasks);
   }
-  
+
   // Calculate critical index and append results return value
   // Create vectors of the task ids and critical indexes
   Rcpp::CharacterVector ci_ids;
   Rcpp::DoubleVector cis;
   // Iterate over every task
-  for(map<string, Task*>::iterator iter =tasks.begin(); 
+  for(map<string, Task*>::iterator iter =tasks.begin();
       iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
-    
+
     // Check to make sure the task isn't the source or sink
-    if(cur_task->get_id() != "%id_sink%" && 
+    if(cur_task->get_id() != "%id_sink%" &&
        cur_task->get_id() != "%id_source%"){
       // Push the current task id onto id list
       ci_ids.push_back(cur_task->get_id());
@@ -327,16 +327,16 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
       // AFTER dividing by total number of tasks
       cis.push_back(cur_task->ci/num);
     }
-    
+
   }
-  
-  // Create a dataframe mapping the task indexes to the 
+
+  // Create a dataframe mapping the task indexes to the
   // corresponding critical index
-  Rcpp::DataFrame ret_cis = Rcpp::DataFrame::create( 
-                                        Rcpp::Named("ids")= ci_ids, 
+  Rcpp::DataFrame ret_cis = Rcpp::DataFrame::create(
+                                        Rcpp::Named("ids")= ci_ids,
                                         Rcpp::Named("critical_indexes") = cis);
-  
-  // Construct a return list containing the distributions and 
+
+  // Construct a return list containing the distributions and
   // the critical indexes
   return Rcpp::List::create(Rcpp::Named("distributions") = ret,
                             Rcpp::Named("critical_indexes") = ret_cis);

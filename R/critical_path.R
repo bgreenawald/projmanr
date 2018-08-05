@@ -71,6 +71,10 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
   graph <- igraph::graph_from_data_frame(adj_list)
   sorted_ids <- names(igraph::topo_sort(graph = graph))
 
+  # Make sure sorted IDs contains all ids, even those that would not
+  # appear in the graph
+  sorted_ids <- c(unlist(setdiff(ids, sorted_ids)), sorted_ids)
+
   # Create source node
   start_succ_ids <- c()
   for (task in all_tasks) {
@@ -192,7 +196,7 @@ gantt <- function(df, start_date = Sys.Date(), color_critical = "#f4424b",
 
   # If data is raw, need preprocessing
   if (raw) {
-    # Do necesary preprocessing
+      # Do necesary preprocessing
       # This is the same as critical path
       data <- df
       all_tasks <- list()
@@ -215,6 +219,10 @@ gantt <- function(df, start_date = Sys.Date(), color_critical = "#f4424b",
       graph <- igraph::graph_from_data_frame(adj_list)
       sorted_ids <- names(igraph::topo_sort(graph = graph))
 
+      # Make sure sorted IDs contains all ids, even those that would not
+      # appear in the graph
+      sorted_ids <- c(unlist(setdiff(ids, sorted_ids)), sorted_ids)
+      
       # Create source node
       start_succ_ids <- c()
       for (task in all_tasks) {

@@ -1,7 +1,7 @@
 Package: projmanr
 Type: Package
 Title: Project Management Tools
-Version: 0.2.1
+Version: 0.2.3
 Authors@R: c(
 	person("Ben", "Greenawald", email = "bgreenawald@gmail.com", role = c("aut", "cre", "cph")),
 	person("Yael", "Grushka-Cockayne", role = c("aut", "cph"))
@@ -20,7 +20,7 @@ Imports:
 	tidyr (>= 0.6.3),
 	mc2d(>= 0.1-18),
     Rcpp
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Depends: R (>= 3.3.0)
 Suggests: testthat
 LinkingTo: Rcpp

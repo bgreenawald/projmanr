@@ -1,10 +1,10 @@
+context("Critican Path on taskdata1")
+
 library(projmanr)
 library(igraph)
 library(tidyr)
 library(R6)
 library(ggplot2)
-
-context("Critican Path on taskdata1")
 
 test_that("Correct critical path", {
   res <- critical_path(projmanr::taskdata1)

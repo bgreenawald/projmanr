@@ -13,15 +13,19 @@ This project is available on the CRAN network and can be installed via:
 install.packages("projmanr")
 ```
 
-For the most up to date development version, use:
+For the most up to date stable version, use:
 
 ```R
 install.packages("devtools")
 devtools::install_github("bgreenawald/projmanr")
 ```
 
+For the most up to date development version, use:
 
-
+```R
+install.packages("devtools")
+devtools::install_github("bgreenawald/projmanr", ref="devel")
+```
 ## Planned Features
 
 * Allow for uncertainty in the task durations. This would run a simulation using the uncertain task durations and output a range of possible project durations.

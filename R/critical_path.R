@@ -53,7 +53,17 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 
   # Calculate the critical path
   c_path <- crit_path(new_ids, all_tasks)
-  ret$critical_path <- c_path[c(-1, -length(c_path))]
+  
+  # Remove source and sink
+  if ("%id_source%" %in% c_path) {
+    c_path <-  c_path[c(-1)]
+  }
+  
+  if ("%id_sink%" %in% c_path) {
+    c_path <- c_path[c(-length(c_path))]
+  }
+  
+  ret$critical_path <- c_path
   ret$results <- to_data_frame(all_tasks)
 
   # If gantt is true, add network diagram to results

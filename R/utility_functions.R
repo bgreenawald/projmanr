@@ -88,6 +88,9 @@ walk_ahead <- function(map, ids, start_date = Sys.Date()){
     }
     # If we do have predecessors, find the one that finishes last
     else{
+      # The first element is the baseline
+      max_task <- map[[current_task$predecessor_id[1]]]
+      
       # Iterate over all predecessors
       for (id in current_task$predecessor_id) {
         pred_task <- map[[id]]
@@ -97,11 +100,14 @@ walk_ahead <- function(map, ids, start_date = Sys.Date()){
         }
         # If the current predecessors after before the current
         # task starts, update the start values
-        if (current_task$early_start <= pred_task$early_finish) {
-          current_task$early_start <- pred_task$early_finish
-          current_task$start_date <- pred_task$start_date +
-            pred_task$duration
+        if (max_task$early_finish < pred_task$early_finish) {
+          max_task <- pred_task
         }
+        
+        # Update the current task with the max early finish
+        current_task$early_start <- max_task$early_finish
+        current_task$start_date <- max_task$start_date +
+          max_task$duration
       }
     }
 

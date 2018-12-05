@@ -4,4 +4,3 @@
 simul <- function(df, ids, nums, ls) {
     .Call(`_projmanr_simul`, df, ids, nums, ls)
 }
-

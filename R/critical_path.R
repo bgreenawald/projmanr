@@ -53,16 +53,16 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
 
   # Calculate the critical path
   c_path <- crit_path(new_ids, all_tasks)
-  
+
   # Remove source and sink
   if ("%id_source%" %in% c_path) {
     c_path <-  c_path[c(-1)]
   }
-  
+
   if ("%id_sink%" %in% c_path) {
     c_path <- c_path[c(-length(c_path))]
   }
-  
+
   ret$critical_path <- c_path
   ret$results <- to_data_frame(all_tasks)
 
@@ -146,7 +146,7 @@ gantt <- function(df, start_date = Sys.Date(), color_critical = "#f4424b",
       # Do necesary preprocessing
       # This is the same as critical path
       data <- df
-      
+
       # Run the preprocess function
       processed_data <- preprocess(data)
       all_tasks <- processed_data[[1]]
@@ -305,21 +305,23 @@ network_diagram <- function(df, use_name_as_label=FALSE){
     }
     igraph::V(graph)$color <- "#41a9f4"
     # Plot the diagram, labeling the nodes according to "use_names_as_labels"
-    if(use_name_as_label){
+    if (use_name_as_label) {
       # Get labels in the correct order
       labels <-  c()
-      sizes <- vector(mode="integer")
-      for(elem in igraph::V(graph)$name){
+      sizes <- vector(mode = "integer")
+      for (elem in igraph::V(graph)$name) {
         label <- as.character(data[as.character(data[[1]]) == elem, 2])
         labels <- c(labels, label)
         sizes <- c(sizes, 9 * nchar(label))
       }
-      graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = sizes, 
-                     vertex.size2 = 15, edge.arrow.size = 0.65, vertex.label = labels)
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle",
+                     vertex.size = sizes, vertex.size2 = 15,
+                     edge.arrow.size = 0.65, vertex.label = labels)
     }
     else{
-      graphics::plot(graph, layout = l, vertex.shape = "rectangle", 
-                     vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle",
+                     vertex.size = 20, vertex.size2 = 15,
+                     edge.arrow.size = 0.65)
     }
   }
   # If not raw, color nodes red for critical, blue otherwise.
@@ -352,20 +354,22 @@ network_diagram <- function(df, use_name_as_label=FALSE){
     }
 
     # Plot the diagram, labeling the nodes according to "use_names_as_labels"
-    if(use_name_as_label){
+    if (use_name_as_label) {
       labels <-  c()
-      sizes <- vector(mode="integer")
-      for(elem in igraph::V(graph)$name){
+      sizes <- vector(mode = "integer")
+      for (elem in igraph::V(graph)$name) {
         label <- as.character(res[as.character(res[[1]]) == elem, 2])
         labels <- c(labels, label)
         sizes <- c(sizes, 9 * nchar(label))
       }
-      graphics::plot(graph, layout = l, vertex.shape = "rectangle", vertex.size = sizes, 
-                     vertex.size2 = 15, edge.arrow.size = 0.65, vertex.label = labels)
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle",
+                     vertex.size = sizes, vertex.size2 = 15,
+                     edge.arrow.size = 0.65, vertex.label = labels)
     }
     else{
-      graphics::plot(graph, layout = l, vertex.shape = "rectangle", 
-                     vertex.size = 20, vertex.size2 = 15, edge.arrow.size = 0.65)
+      graphics::plot(graph, layout = l, vertex.shape = "rectangle",
+                     vertex.size = 20, vertex.size2 = 15,
+                     edge.arrow.size = 0.65)
     }
   }
 
@@ -379,7 +383,8 @@ network_diagram <- function(df, use_name_as_label=FALSE){
 #' @importFrom Rcpp sourceCpp
 NULL
 
-#' Runs a simulation on project end time when certain tasks have uncertain durations
+#' Runs a simulation on project end time when certain tasks have uncertain 
+#' durations
 #'
 #' @param df A data frame of tasks with columns ID, name, duration,
 #' id's of predecessrs (as a comma separated string), type of distrubtion

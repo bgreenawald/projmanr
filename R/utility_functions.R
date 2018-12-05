@@ -7,7 +7,7 @@ Task <- R6::R6Class("Task",
                       name = NULL,
                       duration = NULL,
                       predecessor_id = NULL,
-                      successor_id = NULL,
+                      successsor_id = NULL,
                       early_start = NULL,
                       early_finish = NULL,
                       late_start = NULL,
@@ -90,7 +90,7 @@ walk_ahead <- function(map, ids, start_date = Sys.Date()){
     else{
       # The first element is the baseline
       max_task <- map[[current_task$predecessor_id[1]]]
-      
+
       # Iterate over all predecessors
       for (id in current_task$predecessor_id) {
         pred_task <- map[[id]]
@@ -103,7 +103,7 @@ walk_ahead <- function(map, ids, start_date = Sys.Date()){
         if (max_task$early_finish < pred_task$early_finish) {
           max_task <- pred_task
         }
-        
+
         # Update the current task with the max early finish
         current_task$early_start <- max_task$early_finish
         current_task$start_date <- max_task$start_date +
@@ -244,43 +244,43 @@ make_node_list <- function(map, all_ids){
 preprocess <- function(data) {
   # Create a list to hold the tasks
   all_tasks <- list()
-  
+
   # For each row, or task, in the input, preprocess.
   for (i in 1:nrow(data)) {
-    
+
     # Extract and process the id and name
     id <- to_id(data[i, 1])
     name <- data[i, 2]
-    
+
     # Ensure durations are valid
     if (as.numeric(data[i, 3]) < 0) {
       stop("Durations must be non-negative")
     }
     duration <- data[i, 3]
     pred_id <- as.character(data[i, 4])
-    
+
     # Create a new task object with the given info and
     # add it onto the task list
     new_Task <- Task$new(id, name, duration, pred_id)
     text <- sprintf("all_tasks <- c(all_tasks, '%s' = new_Task)", new_Task$id)
     eval(parse(text = text))
   }
-  
+
   # Create a separate list of ids
   ids <- lapply(data[, 1], to_id)
-  
+
   # Calculate the successors for each task
   invisible(lapply(all_tasks, get_successor, full_tasks = all_tasks))
-  
+
   # Topologically sort the ids
   adj_list <- make_node_list(all_tasks, ids)
   graph <- igraph::graph_from_data_frame(adj_list)
   sorted_ids <- names(igraph::topo_sort(graph = graph))
-  
+
   # Make sure sorted IDs contains all ids, even those that would not
   # appear in the graph
   sorted_ids <- c(unlist(setdiff(ids, sorted_ids)), sorted_ids)
-  
+
   # Create source node
   start_succ_ids <- c()
   for (task in all_tasks) {
@@ -291,7 +291,7 @@ preprocess <- function(data) {
       start_succ_ids <- c(start_succ_ids, task$id)
     }
   }
-  
+
   # Create a sink node
   end_pred_ids <- ""
   for (task in all_tasks) {
@@ -302,14 +302,14 @@ preprocess <- function(data) {
       end_pred_ids <- paste(end_pred_ids, ",", task$id, sep = "")
     }
   }
-  
+
   # Add start task and end task to task list
   start_task <- Task$new("%id_source%", "%id_source%", 0, "")
   start_task$successor_id <- start_succ_ids
   end_task <- Task$new("%id_sink%", "%id_sink%", 0, end_pred_ids)
-  
+
   all_tasks <- c("%id_source%" = start_task, all_tasks, "%id_sink%" = end_task)
   new_ids <- c("%id_source%", sorted_ids, "%id_sink%")
-  
+
   return(list(all_tasks, new_ids, graph))
 }

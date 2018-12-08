@@ -2,7 +2,8 @@
 % Please edit documentation in R/critical_path.R
 \name{simulation}
 \alias{simulation}
-\title{Runs a simulation on project end time when certain tasks have uncertain durations}
+\title{Runs a simulation on project end time when certain tasks have uncertain 
+durations}
 \usage{
 simulation(df, iter = 100)
 }
@@ -35,7 +36,8 @@ simulation.
 }
 }
 \description{
-Runs a simulation on project end time when certain tasks have uncertain durations
+Runs a simulation on project end time when certain tasks have uncertain 
+durations
 }
 \examples{
 # Example using built in data

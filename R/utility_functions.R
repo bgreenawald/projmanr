@@ -2,6 +2,7 @@
 # This class is used to represent a "task" in our R program.
 #' @importFrom R6 R6Class
 Task <- R6::R6Class("Task",
+                    lock_objects = FALSE,
                     public = list(
                       id = NULL,
                       name = NULL,

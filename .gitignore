@@ -6,4 +6,5 @@ projmanr.Rproj
 Rplots.pdf
 revdep
 *.orig
-#.csv
+*.csv
+.Rprofile

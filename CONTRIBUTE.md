@@ -52,7 +52,12 @@ Further, all code must pass all of CRAN and Rstudio's package checks for R. In R
 
 ## C++ development
 
-NEED TO ADD.
+Generally, I would like to keep as much of this package as possible in pure R. That being said, occasionaly features may arise that make more sense to develop in C++ and Rcpp (such as the simulation functionaltiy).
+
+If you feel the need to develop features in C++ and feel comfortable doing so, I certainly will not discourage such development. Contrary to R code, I will not enforce as strict of coding style standards with C++ code since there are far fewer tools to make this process easy. The few standards I would like followed are listed below:
+1. No lines of code should exceed 80 characters.
+2. Variable names and function/method names should also be lowercase with underscores to separate words. Class names should be CamelCase (uppercase letter to start with, words run together, each starting with an uppercase letter).
+3. Code should be well documented and commented.
 
 ## Submitting pull requests
 

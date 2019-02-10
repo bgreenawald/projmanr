@@ -238,22 +238,36 @@ void walk_back(map<string, Task*> all_tasks, std::vector<string> ordered_ids){
 
 // Find the actual critical path and gets total duration
 double crit_path(map<string, Task*> tasks){
-  double total_duration = 0;
-  // Iterate over every task and see if it is in the critical path
-  // Also use this to update the critical index for a given task
+
+  // Get the first early start and late finishes as baselines
+  Task* first_task = tasks.begin()->second;
+  double min_est = first_task->est;
+  double max_lf = first_task->lf;
+  
+  // Update the critical index for a given task
   for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* cur_task = iter->second;
+    
     // Check to see if the current task is critical
     if(abs(cur_task->ef - cur_task->lf) < 0.00001 &&
        abs(cur_task->est - cur_task->lst) < 0.00001){
-      // Update the duration
-      total_duration += cur_task->duration;
       // Update the critical index
       cur_task->ci++;
     }
+    
+    // See if there is an earlier early start of later late finish
+    if(cur_task->est < min_est){
+      min_est = cur_task->est;
+    }
+    
+    if(cur_task->lf > max_lf){
+      max_lf = cur_task->lf;
+    }
+    
+    
   }
-  return total_duration;
+  return max_lf - min_est;
 }
 
 // Wrapper function that performs the entire critical path computation

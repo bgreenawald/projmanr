@@ -72,8 +72,9 @@ critical_path <- function(df, gantt = F, network = F, start_date = Sys.Date()){
   }
 
   # Calculate the total durations and end date
-  ret$total_duration <- sum( (ret$results)[
-                  (ret$results)$is_critical, ]$duration)
+  time_diff <- max(ret$results$end_date) -
+                min(ret$results$start_date)
+  ret$total_duration <- as.numeric(time_diff, unit = "days")
   ret$end_date <- start_date + ret$total_duration
   ret$network <- graph
 
@@ -460,12 +461,12 @@ simulation <- function(df, iter = 100){
              )
       # Make sure no duration is negative
       durations[durations < 0] <- 0
-      text <- sprintf("uncertain[['%s']] <- c(durations)", new_Task$id)
-      eval(parse(text = text))
+      uncertain[[toString(new_Task$id)]] <- c(durations)
+      
     }
   }
   # If not uncertain tasks, stop method
-  if (length(uncertain) == 1) {
+  if (length(uncertain) < 1) {
     stop("Error: no tasks are uncertain")
   }
 

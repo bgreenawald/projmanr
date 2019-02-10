@@ -36,14 +36,14 @@ class Task {
 
   // Getters
   double get_duration(){return duration;}
-  vector<string> get_pred(){return pred_id;}
-  vector<string> get_succ(){return succ_id;}
+  std::vector<string> get_pred(){return pred_id;}
+  std::vector<string> get_succ(){return succ_id;}
   string get_id(){return id;}
   string get_name(){return name;}
   double get_est(){return est;}
 
   // Setters
-  void set_succ(vector<string> new_succ){succ_id = new_succ;}
+  void set_succ(std::vector<string> new_succ){succ_id = new_succ;}
   void set_est(double new_est){est = new_est;}
   void set_ef(double new_ef){ef = new_ef;}
   void set_lst(double new_lst){lst = new_lst;}
@@ -55,15 +55,15 @@ class Task {
 };
 
 // Function declarations
-vector<string> split(string str, char delimiter);
+std::vector<string> split(string str, char delimiter);
 string trim(const string& str);
 void get_successors(map<string, Task*> tasks);
-string print_vec(vector<string> vect);
-void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids);
-void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids);
+string print_vec(std::vector<string> vect);
+void walk_ahead(map<string, Task*> all_tasks, std::vector<string> ordered_ids);
+void walk_back(map<string, Task*> all_tasks, std::vector<string> ordered_ids);
 double crit_path(map<string, Task*> all_tasks);
 Rcpp::List critical_path(map<string, Task*> all_tasks,
-                         vector<string> ordered_ids,
+                         std::vector<string> ordered_ids,
                          int num, map<string, Rcpp::DoubleVector> dists);
 
 // Constructor
@@ -112,7 +112,7 @@ Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids,
   map<string, Rcpp::DoubleVector> dists;
   map<string, Task*> all_tasks;
   Rcpp::CharacterVector dist_names = ls.names();
-  vector<string> ordered_id;
+  std::vector<string> ordered_id;
 
   for(int i = 0; i < dist_names.size(); i++){
     string name = Rcpp::as<string>(dist_names[i]);
@@ -133,8 +133,8 @@ Rcpp::List simul(Rcpp::DataFrame df, Rcpp::CharacterVector ids,
 }
 
 // String split
-vector<string> split(string str, char delimiter) {
-  vector<string> internal;
+std::vector<string> split(string str, char delimiter) {
+  std::vector<string> internal;
   stringstream ss(str); // Turn the string into a stream.
   string tok;
 
@@ -162,13 +162,13 @@ void get_successors(map<string, Task*> tasks){
   for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* current_task = iter->second;
-    vector<string> temp_succ;
+    std::vector<string> temp_succ;
 
     // Iterate over each task again, comparing the current task to each list of predeccessors
     for(map<string, Task*>::iterator iter2 = tasks.begin();
         iter2 != tasks.end(); ++iter2){
       Task* temp = iter2->second;
-      vector<string> pred_ids = temp->pred_id;
+      std::vector<string> pred_ids = temp->pred_id;
       if(std::find(pred_ids.begin(), pred_ids.end(),
                    current_task->get_id()) != pred_ids.end()){
         temp_succ.push_back(temp->id);
@@ -179,7 +179,7 @@ void get_successors(map<string, Task*> tasks){
 }
 
 // Print a string vector
-string print_vec(vector<string> vect){
+string print_vec(std::vector<string> vect){
   string ret = "";
   for(unsigned int i = 0; i < vect.size(); i++){
     ret += vect[i] + " ";
@@ -189,13 +189,13 @@ string print_vec(vector<string> vect){
 }
 
 // Perform the walk ahead step of the critical path
-void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::iterator it = ordered_ids.begin();
+void walk_ahead(map<string, Task*> all_tasks, std::vector<string> ordered_ids){
+  for(std::vector<string>::iterator it = ordered_ids.begin();
       it != ordered_ids.end(); ++it){
     Task* current_task = all_tasks[*it];
-    vector<string> preds = current_task->pred_id;
+    std::vector<string> preds = current_task->pred_id;
     if(preds.size() != 0){
-      for(vector<string>::iterator it2 = preds.begin();
+      for(std::vector<string>::iterator it2 = preds.begin();
           it2 != preds.end(); ++it2){
         if(std::find(preds.begin(), preds.end(), *it2) == preds.end()){
           throw std::string("Invalid predeccessor id. Using a predeccessor") +
@@ -212,13 +212,13 @@ void walk_ahead(map<string, Task*> all_tasks, vector<string> ordered_ids){
 }
 
 // Perform the walk back of the critical path
-void walk_back(map<string, Task*> all_tasks, vector<string> ordered_ids){
-  for(vector<string>::reverse_iterator it = ordered_ids.rbegin();
+void walk_back(map<string, Task*> all_tasks, std::vector<string> ordered_ids){
+  for(std::vector<string>::reverse_iterator it = ordered_ids.rbegin();
       it != ordered_ids.rend(); ++it){
     Task* current_task = all_tasks[*it];
-    vector<string> succ = current_task->succ_id;
+    std::vector<string> succ = current_task->succ_id;
     if(succ.size() != 0){
-      for(vector<string>::iterator it2 = succ.begin();
+      for(std::vector<string>::iterator it2 = succ.begin();
           it2 != succ.end(); ++it2){
         if(std::find(succ.begin(), succ.end(), *it2) == succ.end()){
           throw std::string("Invalid predeccessor id. Using a predeccessor") +
@@ -257,13 +257,13 @@ double crit_path(map<string, Task*> tasks){
 }
 
 // Wrapper function that performs the entire critical path computation
-Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
+Rcpp::List critical_path(map<string, Task*> tasks, std::vector<string> ordered_ids,
                              int num, map<string, Rcpp::DoubleVector> dists){
   // Take care of the source and sink node
   Task* source = new Task("%id_source%", "%id_source%", 0, "");
   Task* sink = new Task("%id_sink%", "%id_sink%", 0, "");
-  vector<string> source_succ;
-  vector<string> sink_pred;
+  std::vector<string> source_succ;
+  std::vector<string> sink_pred;
   for(map<string, Task*>::iterator iter = tasks.begin();
       iter != tasks.end(); ++iter){
     Task* cur = iter->second;
@@ -286,7 +286,7 @@ Rcpp::List critical_path(map<string, Task*> tasks, vector<string> ordered_ids,
   ordered_ids.push_back("%id_sink%");
 
   Rcpp::Rcout << "Running Simulation....." << endl;
-  vector<double> ret(num);
+  std::vector<double> ret(num);
   for(int i = 0; i < num; i++){
 
     Rcpp::checkUserInterrupt();

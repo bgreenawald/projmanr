@@ -3,6 +3,8 @@
 
 R library containing a basic set of tools for project management, including the computation of the critical path of a project and the generation of a gantt chart. This project aims to provide a free alternative for some of the basic features of MS Office.
 
+See this [blog post](https://bgreenawald.github.io/blog/2018/projmanr.html) for more details about this project and where it is going.
+
 ## Contributing to this project
 
 If you would like to contribute to this project, please read the [CONTRIBUTE.md](https://github.com/bgreenawald/projmanr/blob/master/CONTRIBUTE.md).

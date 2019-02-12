@@ -3,7 +3,7 @@
 \docType{data}
 \name{taskdata2}
 \alias{taskdata2}
-\title{Larger collection of sample tasks with hanging tasks}
+\title{Larger collection of sample tasks with hanging tasks.}
 \format{A data frame with 14 rows and 4 variables:
 \describe{
   \item{id}{id for the task}
@@ -15,6 +15,6 @@
 taskdata2
 }
 \description{
-Larger collection of sample tasks with hanging tasks
+Larger collection of sample tasks with hanging tasks.
 }
 \keyword{datasets}

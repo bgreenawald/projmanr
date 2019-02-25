@@ -3,7 +3,7 @@
 \docType{data}
 \name{taskdatauncertain1}
 \alias{taskdatauncertain1}
-\title{Larger collection of sample tasks with uncertainty in task duration}
+\title{Larger collection of sample tasks with uncertainty in task duration.}
 \format{A data frame with 14 rows and 7 variables:
 \describe{
   \item{id}{id for the task}
@@ -25,6 +25,6 @@
 taskdatauncertain1
 }
 \description{
-Larger collection of sample tasks with uncertainty in task duration
+Larger collection of sample tasks with uncertainty in task duration.
 }
 \keyword{datasets}

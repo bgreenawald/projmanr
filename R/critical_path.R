@@ -287,7 +287,7 @@ gantt <- function(df, start_date = Sys.Date(), color_critical = "#f4424b",
     deps = deps
   )
 
-  mdfr <- tidyr::gather(dfr, measure.vars = c("start.date", "end.date"))
+  mdfr <- reshape2::melt(dfr, measure.vars = c("start.date", "end.date"))
 
   # Make labels only show up once
   for (i in 1:(nrow(mdfr) / 2)) {

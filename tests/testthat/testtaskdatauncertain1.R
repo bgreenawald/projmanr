@@ -2,7 +2,7 @@ context("Critican Path on taskdatauncertain1")
 
 library(projmanr)
 library(igraph)
-library(tidyr)
+library(reshape2)
 library(R6)
 library(ggplot2)
 

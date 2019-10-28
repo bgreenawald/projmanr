@@ -17,7 +17,7 @@ Imports:
 	R6 (>= 2.2.2),
 	igraph (>= 1.0.1),
 	ggplot2 (>= 2.2.1),
-	tidyr (>= 0.6.3),
+	reshape2 (>= 1.1.0),
 	mc2d(>= 0.1-18),
     Rcpp
 RoxygenNote: 6.1.0
